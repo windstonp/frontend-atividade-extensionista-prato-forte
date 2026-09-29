@@ -1,3 +1,7 @@
+"use client";
+
+import { useRef } from "react";
+
 type PropsDoField = {
   id: string;
   label: string;
@@ -80,13 +84,30 @@ export function Segmento<T extends string>({
   valor,
   onChange,
   ajuda,
+  erro,
 }: {
   label?: string;
   opcoes: { valor: T; rotulo: string }[];
-  valor: T;
+  valor: T | null;
   onChange: (v: T) => void;
   ajuda?: string;
+  erro?: string;
 }) {
+  const botoes = useRef<(HTMLButtonElement | null)[]>([]);
+  const atual = opcoes.findIndex((o) => o.valor === valor);
+  const focavel = atual === -1 ? 0 : atual;
+
+  // Grupo de rádio: Tab entra e sai; as setas trocam a escolha (padrão do WAI-ARIA).
+  function mover(evento: React.KeyboardEvent, indice: number) {
+    const passo =
+      evento.key === "ArrowRight" || evento.key === "ArrowDown" ? 1 : evento.key === "ArrowLeft" || evento.key === "ArrowUp" ? -1 : 0;
+    if (passo === 0) return;
+    evento.preventDefault();
+    const proximo = (indice + passo + opcoes.length) % opcoes.length;
+    onChange(opcoes[proximo].valor);
+    botoes.current[proximo]?.focus();
+  }
+
   return (
     <div>
       {label ? (
@@ -95,19 +116,26 @@ export function Segmento<T extends string>({
         </span>
       ) : null}
       <div className="flex gap-2" role="radiogroup" aria-label={label}>
-        {opcoes.map((o) => {
+        {opcoes.map((o, i) => {
           const ativo = o.valor === valor;
           return (
             <button
               key={o.valor}
+              ref={(el) => {
+                botoes.current[i] = el;
+              }}
               type="button"
               role="radio"
               aria-checked={ativo}
+              tabIndex={i === focavel ? 0 : -1}
               onClick={() => onChange(o.valor)}
-              className={`flex h-11 flex-1 items-center justify-center rounded-xl border px-2 text-center text-sm transition ${
+              onKeyDown={(e) => mover(e, i)}
+              className={`flex h-11 flex-1 items-center justify-center rounded-xl border px-2 text-center text-sm transition active:scale-[0.97] ${
                 ativo
                   ? "border-tinta bg-tinta font-semibold text-white"
-                  : "border-linha bg-white font-medium text-tinta hover:border-pedra"
+                  : erro
+                    ? "border-alerta bg-white font-medium text-tinta"
+                    : "border-linha bg-white font-medium text-tinta hover:border-pedra"
               }`}
             >
               {o.rotulo}
@@ -116,6 +144,7 @@ export function Segmento<T extends string>({
         })}
       </div>
       {ajuda ? <p className="mt-2 text-[12.5px] leading-snug text-fumo">{ajuda}</p> : null}
+      {erro ? <p className="mt-2 animate-entra text-[12.5px] leading-snug font-medium text-alerta">{erro}</p> : null}
     </div>
   );
 }
