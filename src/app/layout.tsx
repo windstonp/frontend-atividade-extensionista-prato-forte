@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Instrument_Sans } from "next/font/google";
+import { Providers } from "@/lib/query-client";
 import "./globals.css";
 
 const bricolage = Bricolage_Grotesque({
@@ -39,7 +40,9 @@ export default function RootLayout({
       lang="pt-BR"
       className={`${bricolage.variable} ${instrument.variable} h-full`}
     >
-      <body className="min-h-dvh bg-papel">{children}</body>
+      <body className="min-h-dvh bg-papel">
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }
