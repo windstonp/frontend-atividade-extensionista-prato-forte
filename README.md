@@ -1,5 +1,22 @@
 # Prato Forte — frontend
 
+## Rodar (Docker — o WSL não precisa de Node)
+
+```bash
+docker compose run --rm web npm ci          # 1ª vez
+docker compose up web                        # Next em http://localhost:3000 (API: repo backend, :8000)
+docker compose run --rm web npm test         # unit + integração (MSW) + Storybook (Chromium + axe)
+docker compose run --rm web npm run lint     # inclui a guarda "sem mocks em produção" (D12)
+docker compose run --rm web npm run storybook  # http://localhost:6006
+```
+
+E2E (precisa do backend no ar e semeado):
+```bash
+(cd ../backend && docker compose up -d && docker compose exec api php artisan migrate:fresh --seeder=E2ESeeder --force)
+docker compose run --rm web npm run e2e
+```
+
+
 Guia nutricional para quem treina na academia Zfit, em Capivari de Baixo.
 Projeto de extensão do curso de Ciência da Computação da UNINTER.
 

@@ -1,0 +1,91 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      - run: npm run lint # inclui a regra "sem mocks em produção" (D12)
+      - run: npm run typecheck
+      - run: npm test # unit + integration (MSW) + storybook (Chromium + axe)
+      - run: npm audit --audit-level=high
+
+  e2e:
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: prato_forte
+          MYSQL_USER: prato
+          MYSQL_PASSWORD: prato
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=30
+      mailpit:
+        image: axllent/mailpit
+        ports:
+          - 1025:1025
+          - 8025:8025
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: prato_forte
+      DB_USERNAME: prato
+      DB_PASSWORD: prato
+      MAIL_HOST: 127.0.0.1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: frontend
+      - uses: actions/checkout@v4
+        with:
+          repository: windstonp/backend-atividade-extensionista-prato-forte
+          # Repo privado? crie o secret BACKEND_REPO_TOKEN (PAT só-leitura) no repo do front.
+          token: ${{ secrets.BACKEND_REPO_TOKEN || github.token }}
+          path: backend
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql, intl, zip, bcmath
+          coverage: none
+      - name: API (Laravel) com as contas do E2E
+        working-directory: backend
+        run: |
+          composer install --no-interaction --prefer-dist --no-progress
+          cp .env.example .env
+          php artisan key:generate
+          php artisan migrate:fresh --seeder=E2ESeeder --force
+          php artisan serve --host=0.0.0.0 --port=8000 > /tmp/api.log 2>&1 &
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - working-directory: frontend
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium webkit
+      - working-directory: frontend
+        run: npm run e2e
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright
+          path: |
+            frontend/test-results
+            frontend/playwright-report
+            /tmp/api.log
