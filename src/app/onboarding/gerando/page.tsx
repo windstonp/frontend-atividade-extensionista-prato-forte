@@ -6,7 +6,6 @@ import { MarcaNutri } from "@/components/icons";
 import { IconeCheck } from "@/components/icons";
 import { Button } from "@/components/ui/Button";
 import { generatePlan } from "@/lib/mock-api";
-import { useOnboarding } from "@/lib/onboarding-store";
 
 const PASSOS = [
   "Lendo seu perfil",
@@ -18,7 +17,6 @@ const PASSOS = [
 
 export default function Gerando() {
   const router = useRouter();
-  const { respostas } = useOnboarding();
   const [passo, setPasso] = useState(0);
   const [erro, setErro] = useState(false);
   const [tentativa, setTentativa] = useState(0);
@@ -33,7 +31,7 @@ export default function Gerando() {
     );
 
     let cancelado = false;
-    generatePlan(respostas)
+    generatePlan({})
       .then(() => {
         if (cancelado) return;
         setPasso(PASSOS.length);
@@ -47,7 +45,7 @@ export default function Gerando() {
       cancelado = true;
       clearInterval(relogio);
     };
-  }, [respostas, router, tentativa]);
+  }, [router, tentativa]);
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-[430px] flex-col justify-between bg-tinta px-8 pt-13 pb-10 text-neve area-segura-cima area-segura-baixo">

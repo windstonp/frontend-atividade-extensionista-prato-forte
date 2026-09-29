@@ -6,12 +6,13 @@ import { IconeCheck } from "@/components/icons";
 import { mockDayPlan } from "@/mocks/fixtures/mock-data";
 import { kcal } from "@/lib/format";
 import { totaisDaRefeicao } from "@/lib/nutrition";
-import { useOnboarding } from "@/lib/onboarding-store";
+import { useMe } from "@/features/auth/hooks";
+import { useDadosOnboarding } from "@/features/onboarding/hooks";
 import { cascata } from "@/lib/motion";
 
 export default function Pronto() {
-  const { respostas } = useOnboarding();
-  const nome = respostas.name.trim();
+  const nome = useMe().data?.preferredName ?? "";
+  const treino = useDadosOnboarding().data?.answers.trainingTime ?? "…";
   const { targetMacros, meals } = mockDayPlan;
 
   return (
@@ -35,7 +36,7 @@ export default function Pronto() {
           style={{ animationDelay: "260ms" }}
         >
           Cinco refeições montadas com o que você marcou, encaixadas entre o trabalho e
-          o treino das {respostas.trainingTime}.
+          o treino das {treino}.
         </p>
 
         <section

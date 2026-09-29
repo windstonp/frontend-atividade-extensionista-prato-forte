@@ -48,7 +48,6 @@ export default defineConfig([
       'src/components/ui/Sheet.tsx',
       'src/components/ui/Toast.tsx',
       'src/lib/motion.ts',
-      'src/lib/onboarding-store.tsx',
       'src/lib/plan-store.tsx',
     ],
     rules: { 'react-hooks/set-state-in-effect': 'warn', 'react-hooks/purity': 'warn' },
