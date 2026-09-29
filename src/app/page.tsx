@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { Suspense } from "react";
+import { AvisoDeSaida, RedirecionarSeLogado } from "@/features/auth/components/Visitante";
 import { ButtonLink } from "@/components/ui/Button";
 import { MarcaNutri } from "@/components/icons";
 
@@ -80,10 +81,10 @@ export default function BoasVindas() {
 
       <div className="flex flex-col gap-3">
         <div className="animate-entra" style={{ animationDelay: "1080ms" }}>
-          <ButtonLink href="/onboarding/objetivo">Montar meu plano</ButtonLink>
+          <ButtonLink href="/cadastro">Montar meu plano</ButtonLink>
         </div>
         <div className="animate-entra" style={{ animationDelay: "1160ms" }}>
-          <ButtonLink href="/hoje" variante="contorno-escuro" className="h-[50px]">
+          <ButtonLink href="/entrar" variante="contorno-escuro" className="h-[50px]">
             Já tenho conta
           </ButtonLink>
         </div>
@@ -95,9 +96,10 @@ export default function BoasVindas() {
         </p>
       </div>
 
-      <Link href="/hoje" className="sr-only">
-        Pular para o app
-      </Link>
+      <Suspense fallback={null}>
+        <RedirecionarSeLogado />
+        <AvisoDeSaida />
+      </Suspense>
     </div>
   );
 }
