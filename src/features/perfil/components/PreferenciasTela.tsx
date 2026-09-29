@@ -71,7 +71,9 @@ function FormPreferencias({ perfil, catalogo }: { perfil: Perfil; catalogo: Cata
   const [erroNovo, setErroNovo] = useState<string>();
   const [erro, setErro] = useState<ApiError | null>(null);
 
-  const mudou = (Object.keys(inicial) as (keyof EntradaPreferencias)[]).some((campo) => !iguais(inicial[campo], escolhas[campo]));
+  const mudou =
+    novo.trim() !== "" ||
+    (Object.keys(inicial) as (keyof EntradaPreferencias)[]).some((campo) => !iguais(inicial[campo], escolhas[campo]));
 
   function alternar<C extends "restrictions" | "pantryItems">(campo: C, slug: string) {
     setEscolhas((atual) => ({
@@ -87,17 +89,18 @@ function FormPreferencias({ perfil, catalogo }: { perfil: Perfil; catalogo: Cata
     }));
   }
 
+  /** Mensagem de erro do item digitado em "Outro alimento", ou nada se ele pode entrar. */
+  function problemaDoOutro(item: string): string | undefined {
+    const repetido = escolhas.otherRestrictions.some((o) => o.toLocaleLowerCase("pt-BR") === item.toLocaleLowerCase("pt-BR"));
+    if ([...item].length < 2 || [...item].length > 60) return MENSAGENS.outraTamanho;
+    if (repetido) return "Esse item já está na lista.";
+    if (escolhas.otherRestrictions.length >= 10) return MENSAGENS.outrasMuitas;
+    return undefined;
+  }
+
   function adicionarOutro() {
     const item = novo.trim();
-    const repetido = escolhas.otherRestrictions.some((o) => o.toLocaleLowerCase("pt-BR") === item.toLocaleLowerCase("pt-BR"));
-    const problema =
-      [...item].length < 2 || [...item].length > 60
-        ? MENSAGENS.outraTamanho
-        : repetido
-          ? "Esse item já está na lista."
-          : escolhas.otherRestrictions.length >= 10
-            ? MENSAGENS.outrasMuitas
-            : undefined;
+    const problema = problemaDoOutro(item);
     setErroNovo(problema);
     if (problema) return;
     setEscolhas((atual) => ({ ...atual, otherRestrictions: [...atual.otherRestrictions, item] }));
@@ -107,10 +110,17 @@ function FormPreferencias({ perfil, catalogo }: { perfil: Perfil; catalogo: Cata
 
   async function enviar() {
     setErro(null);
+    // Restrição digitada e não confirmada em "Adicionar" entra também: perder uma alergia em silêncio é pior (RN17).
+    const pendente = novo.trim();
+    if (pendente) {
+      const problema = problemaDoOutro(pendente);
+      setErroNovo(problema);
+      if (problema) return;
+    }
     try {
       await salvar.mutateAsync({
         restrictions: catalogo.restrictions.map((r) => r.slug).filter((s) => escolhas.restrictions.includes(s)),
-        otherRestrictions: escolhas.otherRestrictions,
+        otherRestrictions: pendente ? [...escolhas.otherRestrictions, pendente] : escolhas.otherRestrictions,
         pantryItems: catalogo.pantry.flatMap((g) => g.items.map((i) => i.slug)).filter((s) => escolhas.pantryItems.includes(s)),
         dislikedFoodIds: catalogo.dislikeOptions.map((d) => d.id).filter((id) => escolhas.dislikedFoodIds.includes(id)),
       });

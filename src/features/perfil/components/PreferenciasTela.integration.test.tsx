@@ -68,6 +68,18 @@ describe('Preferências e restrições (S18)', () => {
     ]);
   });
 
+  it('não perde o alimento digitado se a pessoa salvar sem tocar em "Adicionar"', async () => {
+    const usuario = userEvent.setup();
+    renderizar(<PreferenciasTela />);
+
+    await usuario.click(await screen.findByRole('button', { name: 'Adicionar outro alimento' }));
+    await usuario.type(screen.getByLabelText('Outro alimento'), 'pimenta');
+    await usuario.click(screen.getByRole('button', { name: 'Salvar alterações' }));
+
+    await waitFor(() => expect(roteador.push).toHaveBeenCalledWith('/perfil'));
+    expect(corpos).toEqual([expect.objectContaining({ other_restrictions: ['camarão', 'pimenta'] })]);
+  });
+
   it('não aceita outro alimento repetido', async () => {
     const usuario = userEvent.setup();
     renderizar(<PreferenciasTela />);
