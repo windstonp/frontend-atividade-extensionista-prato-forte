@@ -35,8 +35,8 @@ export function Field({
       >
         {label}
       </label>
-      {/* A caixa balança uma vez quando um erro novo aparece. */}
-      <div key={erro ?? ""} className={`relative ${erro ? "animate-balanca" : ""}`}>
+      {/* A caixa balança quando o erro aparece. Sem `key` aqui: remontar o input tiraria o foco de quem digita. */}
+      <div className={`relative ${erro ? "animate-balanca" : ""}`}>
         <input
           id={id}
           aria-invalid={erro ? true : undefined}

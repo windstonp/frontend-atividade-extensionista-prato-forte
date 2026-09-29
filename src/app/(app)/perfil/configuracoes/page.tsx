@@ -1,14 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Screen } from "@/components/app/Screen";
 import { TopBar } from "@/components/app/TopBar";
 import { Segmento } from "@/components/ui/Field";
 import { Toggle } from "@/components/ui/Toggle";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { IconeAvancar } from "@/components/icons";
 import { usePlan } from "@/lib/plan-store";
+import { ContaSection } from "@/features/auth/components/ContaSection";
 
 export default function Configuracoes() {
   const { carregando, profile } = usePlan();
@@ -78,34 +77,7 @@ export default function Configuracoes() {
           ]}
         />
 
-        <h2 className="mt-[22px] text-[12.5px] font-semibold text-fumo">Sua conta</h2>
-        <div className="mt-2.5 rounded-[20px] bg-white px-[18px]">
-          <div className="flex min-h-[62px] items-center border-b border-fio py-3">
-            <div className="flex-1">
-              <p className="text-[15px] font-semibold">E-mail</p>
-              <p className="mt-0.5 text-[13px] text-fumo">{profile.email}</p>
-            </div>
-          </div>
-          <button
-            type="button"
-            className="flex min-h-[62px] w-full items-center gap-3.5 border-b border-fio py-3 text-left"
-          >
-            <span className="flex-1 text-[15px] font-semibold">Trocar senha</span>
-            <IconeAvancar size={18} className="shrink-0 text-musgo" />
-          </button>
-          <Link
-            href="/"
-            className="flex min-h-[62px] items-center gap-3.5 border-b border-fio py-3"
-          >
-            <span className="flex-1 text-[15px] font-semibold">Sair desta conta</span>
-            <IconeAvancar size={18} className="shrink-0 text-musgo" />
-          </Link>
-          <button type="button" className="flex min-h-[62px] w-full items-center py-3 text-left">
-            <span className="flex-1 text-[15px] font-semibold text-alerta">
-              Apagar minha conta e meus dados
-            </span>
-          </button>
-        </div>
+        <ContaSection />
 
         <div className="mt-[22px] border-t border-linha pt-[18px]">
           <p className="text-[12.5px] leading-relaxed text-fumo">
