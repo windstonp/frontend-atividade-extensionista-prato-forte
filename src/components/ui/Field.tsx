@@ -1,31 +1,52 @@
+type PropsDoField = {
+  id: string;
+  label: string;
+  sufixo?: string;
+  ajuda?: string;
+  erro?: string;
+  aviso?: string;
+  /** Elemento dentro da caixa, à direita (ex.: botão "Mostrar senha"). */
+  acessorio?: React.ReactNode;
+  style?: React.CSSProperties;
+} & Omit<React.ComponentProps<"input">, "style">;
+
 export function Field({
   id,
   label,
   sufixo,
   ajuda,
+  erro,
+  aviso,
+  acessorio,
   className = "",
   style,
   ...resto
-}: {
-  id: string;
-  label: string;
-  sufixo?: string;
-  ajuda?: string;
-  style?: React.CSSProperties;
-} & Omit<React.InputHTMLAttributes<HTMLInputElement>, "style">) {
+}: PropsDoField) {
+  const idAjuda = ajuda ? `${id}-ajuda` : undefined;
+  const idMensagem = erro || aviso ? `${id}-mensagem` : undefined;
+  const descritoPor = [idAjuda, idMensagem].filter(Boolean).join(" ") || undefined;
+  const folgaDireita = acessorio ? 92 : sufixo ? sufixo.length * 9 + 22 : undefined;
+
   return (
-    <div className={className} style={style}>
+    <div className={`group/campo ${className}`} style={style}>
       <label
         htmlFor={id}
-        className="mb-[7px] block text-[12.5px] font-semibold text-fumo"
+        className="mb-[7px] block text-[12.5px] font-semibold text-fumo transition-colors duration-200 group-focus-within/campo:text-tinta"
       >
         {label}
       </label>
-      <div className="relative">
+      {/* A caixa balança uma vez quando um erro novo aparece. */}
+      <div key={erro ?? ""} className={`relative ${erro ? "animate-balanca" : ""}`}>
         <input
           id={id}
-          className="h-[52px] w-full rounded-[14px] border border-linha bg-white px-4 text-base font-medium text-tinta transition placeholder:font-normal placeholder:text-musgo focus:border-tinta focus:shadow-[inset_0_0_0_1px_var(--color-tinta)] focus:outline-none disabled:bg-fio disabled:text-fumo"
-          style={sufixo ? { paddingRight: `${sufixo.length * 9 + 22}px` } : undefined}
+          aria-invalid={erro ? true : undefined}
+          aria-describedby={descritoPor}
+          className={`h-[52px] w-full rounded-[14px] border bg-white px-4 text-base font-medium text-tinta transition placeholder:font-normal placeholder:text-musgo focus:outline-none disabled:bg-fio disabled:text-fumo ${
+            erro
+              ? "border-alerta shadow-[inset_0_0_0_1px_var(--color-alerta)]"
+              : "border-linha focus:border-tinta focus:shadow-[inset_0_0_0_1px_var(--color-tinta)]"
+          }`}
+          style={folgaDireita ? { paddingRight: `${folgaDireita}px` } : undefined}
           {...resto}
         />
         {sufixo ? (
@@ -33,8 +54,22 @@ export function Field({
             {sufixo}
           </span>
         ) : null}
+        {acessorio}
       </div>
-      {ajuda ? <p className="mt-2 text-[12.5px] leading-snug text-fumo">{ajuda}</p> : null}
+      {ajuda ? (
+        <p id={idAjuda} className="mt-2 text-[12.5px] leading-snug text-fumo">
+          {ajuda}
+        </p>
+      ) : null}
+      {erro ? (
+        <p id={idMensagem} className="mt-2 animate-entra text-[12.5px] leading-snug font-medium text-alerta">
+          {erro}
+        </p>
+      ) : aviso ? (
+        <p id={idMensagem} className="mt-2 animate-entra text-[12.5px] leading-snug font-medium text-gema-texto">
+          {aviso}
+        </p>
+      ) : null}
     </div>
   );
 }
