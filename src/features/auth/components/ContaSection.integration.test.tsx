@@ -43,6 +43,15 @@ describe('Sua conta', () => {
     expect(saiu).toBe(true);
   });
 
+  it('sair com a sessão já vencida também volta às Boas-vindas', async () => {
+    server.use(http.post(url('/logout'), () => erroDaApi(401, 'UNAUTHENTICATED', 'Sua sessão expirou. Entre de novo.')));
+
+    renderizar(<ContaSection />);
+    await userEvent.setup().click(await screen.findByRole('button', { name: /Sair desta conta/ }));
+
+    await waitFor(() => expect(recarregarEm).toHaveBeenCalledWith('/'));
+  });
+
   it('apagar com a senha certa manda a senha e recarrega avisando (RF06)', async () => {
     let corpo: unknown;
     server.use(

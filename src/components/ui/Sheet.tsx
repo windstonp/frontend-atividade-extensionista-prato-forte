@@ -28,6 +28,12 @@ export function Sheet({
   const idTitulo = useId();
   const idDescricao = useId();
   const [montada, setMontada] = useState(aberta);
+  // `aoFechar` costuma chegar inline: guardado numa ref, a troca de função a cada render do pai
+  // não reinicia o efeito de foco (que devolveria o foco para trás da folha).
+  const fechar = useRef(aoFechar);
+  useEffect(() => {
+    fechar.current = aoFechar;
+  });
   const [saindo, setSaindo] = useState(false);
 
   useEffect(() => {
@@ -51,7 +57,7 @@ export function Sheet({
 
     const aoTeclar = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        aoFechar();
+        fechar.current();
         return;
       }
       if (e.key !== "Tab" || !caixa.current) return;
@@ -78,7 +84,7 @@ export function Sheet({
       document.removeEventListener("keydown", aoTeclar);
       anterior?.focus();
     };
-  }, [aberta, aoFechar]);
+  }, [aberta]);
 
   if (!montada) return null;
 

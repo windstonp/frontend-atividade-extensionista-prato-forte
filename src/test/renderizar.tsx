@@ -2,9 +2,12 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render } from '@testing-library/react';
 import { Toaster } from '@/components/ui/Toaster';
 
-/** Renderiza com um QueryClient novo (sem novas tentativas) e o Toaster, como no app. */
-export function renderizar(ui: React.ReactElement) {
-  const cliente = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+/** QueryClient de teste: sem novas tentativas. */
+export const novoClienteDeTeste = () =>
+  new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+
+/** Renderiza com o Toaster, como no app; o cliente pode vir com cache pronto. */
+export function renderizar(ui: React.ReactElement, cliente = novoClienteDeTeste()) {
   return {
     cliente,
     ...render(

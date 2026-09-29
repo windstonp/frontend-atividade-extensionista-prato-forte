@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { IconeAvancar } from "@/components/icons";
 import { useToast } from "@/components/ui/Toaster";
+import { ApiError } from "@/lib/api/errors";
 import { recarregarEm } from "@/lib/navegar";
 import { useDeleteAccount, useLogout, useMe } from "../hooks";
 import { DeleteAccountSheet } from "./DeleteAccountSheet";
@@ -22,8 +23,10 @@ export function ContaSection() {
     try {
       await sair.mutateAsync();
       recarregarEm("/"); // recarga = cache, formulários e sessão do cliente zerados (RF03)
-    } catch {
-      avisar({ texto: "Não deu para sair agora. Tente de novo." });
+    } catch (erro) {
+      // 401: a sessão já tinha acabado — para quem tocou em "Sair", o resultado é o mesmo.
+      if (erro instanceof ApiError && erro.status === 401) recarregarEm("/");
+      else avisar({ texto: "Não deu para sair agora. Tente de novo." });
     }
   }
 

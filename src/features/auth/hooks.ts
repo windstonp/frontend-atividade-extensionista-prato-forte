@@ -40,7 +40,10 @@ export const useUpdatePassword = () => useMutation({ mutationFn: conta.updatePas
  * Também é o que navega depois de entrar/criar conta, porque as mutações gravam `['me']`.
  */
 export function useRedirecionarSeLogado() {
-  const { data: user } = useMe();
+  // Com a sessão morta, o React Query mantém o usuário antigo em `data` junto com o erro 401;
+  // confiar nele aqui criaria um laço com o AuthGate (/entrar → app → /entrar…).
+  const { data, isError } = useMe();
+  const user = isError ? undefined : data;
   const router = useRouter();
   const voltar = useSearchParams().get('voltar');
 

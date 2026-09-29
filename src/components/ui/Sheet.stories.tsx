@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
+import { useState } from 'react';
 import { Button } from './Button';
 import { Sheet } from './Sheet';
 
@@ -58,5 +59,26 @@ export const Fechada: Story = {
   args: { aberta: false },
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).queryByRole('dialog')).toBeNull();
+  },
+};
+
+/** Pai que re-renderiza a cada toque e passa `aoFechar` novo (inline), como as telas fazem. */
+function PaiQueRerenderiza() {
+  const [toques, setToques] = useState(0);
+  return (
+    <Sheet aberta aoFechar={() => setToques(0)} titulo="Trocar o arroz">
+      <Button variante="contorno" className="mt-5" onClick={() => setToques((n) => n + 1)}>
+        Tocado {toques} vezes
+      </Button>
+    </Sheet>
+  );
+}
+
+export const FocoSobreviveARerender: Story = {
+  render: () => <PaiQueRerenderiza />,
+  play: async ({ canvasElement }) => {
+    const tela = within(canvasElement);
+    await userEvent.click(tela.getByRole('button', { name: 'Tocado 0 vezes' }));
+    await expect(tela.getByRole('button', { name: 'Tocado 1 vezes' })).toHaveFocus();
   },
 };
