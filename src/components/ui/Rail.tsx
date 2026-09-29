@@ -87,7 +87,9 @@ export function ReguaPeso({
   atraso?: number;
 }) {
   const montado = useMontado(atraso);
-  const pos = Math.min(100, Math.max(0, ((atual - inicio) / (meta - inicio)) * 100));
+  // Manter o peso: início = meta; a régua fica cheia em vez de dividir por zero.
+  const distancia = meta - inicio;
+  const pos = distancia === 0 ? 100 : Math.min(100, Math.max(0, ((atual - inicio) / distancia) * 100));
   const larguraAtual = montado ? pos : 0;
 
   return (

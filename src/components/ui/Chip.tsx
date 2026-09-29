@@ -1,5 +1,7 @@
 "use client";
 
+import { IconeMais } from "@/components/icons";
+
 export function Chip({
   marcado,
   onClick,
@@ -33,5 +35,35 @@ export function Chip({
       />
       {children}
     </button>
+  );
+}
+
+/** Item digitado pela pessoa (ex.: "outras restrições"), com botão para tirar da lista. */
+export function ChipRemovivel({
+  children,
+  aoRemover,
+  className = "",
+  style,
+}: {
+  children: string;
+  aoRemover: () => void;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <span
+      style={style}
+      className={`inline-flex min-h-11 items-center gap-1 rounded-full border border-tinta bg-tinta pr-1.5 pl-4 text-sm font-medium text-white ${className}`}
+    >
+      {children}
+      <button
+        type="button"
+        aria-label={`Remover ${children}`}
+        onClick={aoRemover}
+        className="flex size-8 items-center justify-center rounded-full transition-[background-color,transform] duration-200 hover:bg-white/15 active:scale-90"
+      >
+        <IconeMais size={16} className="rotate-45" />
+      </button>
+    </span>
   );
 }
