@@ -1,0 +1,14 @@
+services:
+  web:
+    image: mcr.microsoft.com/playwright:v1.63.0-noble
+    user: "1000:1000"
+    working_dir: /app
+    network_mode: host # enxerga a API (localhost:8000) e o Mailpit (localhost:8025) do repo backend
+    environment:
+      HOME: /tmp
+      NEXT_TELEMETRY_DISABLED: "1"
+      STORYBOOK_DISABLE_TELEMETRY: "1"
+      NPM_CONFIG_UPDATE_NOTIFIER: "false"
+    volumes:
+      - .:/app
+    command: npm run dev

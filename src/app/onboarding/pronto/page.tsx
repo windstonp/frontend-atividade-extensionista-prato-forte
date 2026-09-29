@@ -3,7 +3,7 @@
 import { Screen } from "@/components/app/Screen";
 import { ButtonLink } from "@/components/ui/Button";
 import { IconeCheck } from "@/components/icons";
-import { mockDayPlan } from "@/lib/mock-data";
+import { mockDayPlan } from "@/mocks/fixtures/mock-data";
 import { kcal } from "@/lib/format";
 import { totaisDaRefeicao } from "@/lib/nutrition";
 import { useOnboarding } from "@/lib/onboarding-store";

@@ -5,7 +5,7 @@ import {
   mockSubstitutions,
   mockSuggestions,
   mockWeighIns,
-} from "./mock-data";
+} from "@/mocks/fixtures/mock-data";
 import type {
   DayAdherence,
   DayPlan,

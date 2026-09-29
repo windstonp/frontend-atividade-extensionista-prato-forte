@@ -13,8 +13,8 @@ import {
   IconeSeta,
   MarcaNutri,
 } from "@/components/icons";
-import { askNutri, buildNutriContext, getSubstitutions } from "@/lib/api";
-import { mockSuggestions } from "@/lib/mock-data";
+import { askNutri, buildNutriContext, getSubstitutions } from "@/lib/mock-api";
+import { mockSuggestions } from "@/mocks/fixtures/mock-data";
 import { gramas, kcal } from "@/lib/format";
 import { usePlan, useResumoDoDia } from "@/lib/plan-store";
 import type { NutriAction, NutriMessage } from "@/lib/types";

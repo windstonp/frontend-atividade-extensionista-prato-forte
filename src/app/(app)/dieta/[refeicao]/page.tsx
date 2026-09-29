@@ -12,7 +12,7 @@ import { Sheet } from "@/components/ui/Sheet";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Toast } from "@/components/ui/Toast";
 import { IconeCheck } from "@/components/icons";
-import { getSubstitutions } from "@/lib/api";
+import { getSubstitutions } from "@/lib/mock-api";
 import { gramas, kcal, porcentagem } from "@/lib/format";
 import { totaisDaRefeicao } from "@/lib/nutrition";
 import { usePlan } from "@/lib/plan-store";

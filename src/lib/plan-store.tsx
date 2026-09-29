@@ -8,7 +8,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import * as api from "./api";
+import * as api from "./mock-api";
 import { totaisConsumidos, totaisDaRefeicao, totaisDoDia } from "./nutrition";
 import type {
   DayAdherence,

@@ -6,7 +6,7 @@ import type {
   Profile,
   Substitution,
   WeighIn,
-} from "./types";
+} from "@/lib/types";
 
 /**
  * Dados fictícios de uma aluna da Zfit. Servem para validar a experiência

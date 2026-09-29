@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { MarcaNutri } from "@/components/icons";
 import { IconeCheck } from "@/components/icons";
 import { Button } from "@/components/ui/Button";
-import { generatePlan } from "@/lib/api";
+import { generatePlan } from "@/lib/mock-api";
 import { useOnboarding } from "@/lib/onboarding-store";
 
 const PASSOS = [
