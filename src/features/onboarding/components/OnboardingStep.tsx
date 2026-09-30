@@ -18,6 +18,7 @@ export function OnboardingStep({
   titulo,
   descricao,
   voltarPara,
+  aoVoltar,
   rotuloBotao = "Continuar",
   rotuloSalvando = "Salvando…",
   carregando = false,
@@ -34,6 +35,8 @@ export function OnboardingStep({
   titulo: string;
   descricao: string;
   voltarPara: string | null;
+  /** Sem URL para voltar (passos só no cliente, como o questionário): o botão chama isto. */
+  aoVoltar?: () => void;
   rotuloBotao?: string;
   rotuloSalvando?: string;
   carregando?: boolean;
@@ -71,6 +74,15 @@ export function OnboardingStep({
               >
                 <IconeVoltar size={22} />
               </Link>
+            ) : aoVoltar ? (
+              <button
+                type="button"
+                onClick={aoVoltar}
+                aria-label="Voltar"
+                className="-ml-2.5 flex size-10 items-center justify-center rounded-full transition-colors hover:bg-tinta/5"
+              >
+                <IconeVoltar size={22} />
+              </button>
             ) : (
               <span />
             )}
