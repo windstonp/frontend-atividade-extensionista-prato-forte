@@ -38,16 +38,20 @@ describe('hooks da Evolução', () => {
     expect(result.current.data!.averages.protein.targetG).toBe(115);
   });
 
-  it('registrar peso invalida progresso, pesagens e perfil', async () => {
+  it('registrar peso: progresso e onboarding saem do cache (nada velho na volta), pesagens e perfil são invalidados', async () => {
     server.use(http.post(url('/weigh-ins'), () => HttpResponse.json({ data: { id: 9, date: '2026-09-30', weight_kg: 58.6 }, meta: { replaced: false } }, { status: 201 })));
     const { cliente, wrapper } = comCliente();
+    cliente.setQueryData(CHAVES.progresso('6w'), { velho: true });
+    cliente.setQueryData(CHAVES.onboarding, { answers: { weightKg: 58.4 } });
     const invalidar = vi.spyOn(cliente, 'invalidateQueries');
     const { result } = renderHook(() => useRegistrarPeso(), { wrapper });
 
     await act(() => result.current.mutateAsync(58.6));
 
+    expect(cliente.getQueryData(CHAVES.progresso('6w'))).toBeUndefined();
+    expect(cliente.getQueryData(CHAVES.onboarding)).toBeUndefined();
     const chaves = invalidar.mock.calls.map(([filtro]) => JSON.stringify(filtro?.queryKey));
-    expect(chaves).toEqual(expect.arrayContaining([JSON.stringify(CHAVES.progressos), JSON.stringify(CHAVES.pesagens), JSON.stringify(CHAVES.perfil)]));
+    expect(chaves).toEqual(expect.arrayContaining([JSON.stringify(CHAVES.pesagens), JSON.stringify(CHAVES.perfil)]));
   });
 
   it('usePeriodo lembra a escolha e começa em 6w', () => {

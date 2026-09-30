@@ -12,13 +12,18 @@ export const useProgresso = (periodo: Periodo) =>
 
 export const usePesagens = () => useQuery({ queryKey: CHAVES.pesagens, queryFn: progresso.getPesagens });
 
-/** CA08: salvar muda a Evolução, o card de Hoje e o Perfil. */
+/**
+ * CA08: salvar muda a Evolução, o card de Hoje e o Perfil. A Evolução não está montada agora:
+ * invalidar só a deixaria mostrar o peso velho na volta — o cache dela sai. O do onboarding também,
+ * senão "Dados pessoais" reabre com o peso antigo e, salvo, grava ele por cima da pesagem de hoje.
+ */
 export function useRegistrarPeso() {
   const cliente = useQueryClient();
   return useMutation({
     mutationFn: progresso.registrarPeso,
     onSuccess: () => {
-      void cliente.invalidateQueries({ queryKey: CHAVES.progressos });
+      cliente.removeQueries({ queryKey: CHAVES.progressos });
+      cliente.removeQueries({ queryKey: CHAVES.onboarding });
       void cliente.invalidateQueries({ queryKey: CHAVES.pesagens });
       void cliente.invalidateQueries({ queryKey: CHAVES.perfil });
     },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { IconeMais, IconeMenos } from "@/components/icons";
 import { CountUp } from "@/components/ui/CountUp";
 import { peso } from "@/lib/format";
@@ -14,10 +14,21 @@ const botao =
 export function WeightStepper({ valor, base, aoMudar }: { valor: number; base: number; aoMudar: (v: number) => void }) {
   const [digitando, setDigitando] = useState(false);
   const [texto, setTexto] = useState("");
+  const numero = useRef<HTMLButtonElement>(null);
+  const devolverFoco = useRef(false);
   const umaCasa = (n: number) => n.toFixed(1).replace(".", ",");
 
-  function confirmar() {
-    aoMudar(lerPesoDigitado(texto, valor));
+  // Enter/Escape devolvem o foco ao número (quem usa teclado não se perde); clicar fora não.
+  useEffect(() => {
+    if (!digitando && devolverFoco.current) {
+      devolverFoco.current = false;
+      numero.current?.focus();
+    }
+  }, [digitando]);
+
+  function sair(salvar: boolean, foco: boolean) {
+    if (salvar) aoMudar(lerPesoDigitado(texto, valor));
+    devolverFoco.current = foco;
     setDigitando(false);
   }
 
@@ -34,15 +45,20 @@ export function WeightStepper({ valor, base, aoMudar }: { valor: number; base: n
             aria-label="Peso em quilos"
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
-            onBlur={confirmar}
+            onFocus={(e) => e.currentTarget.select()} // digitar por cima troca o número inteiro
+            onBlur={() => sair(true, false)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") confirmar();
-              if (e.key === "Escape") setDigitando(false);
+              // preventDefault: o mesmo Enter não pode "clicar" o número que recebe o foco e reabrir o campo.
+              if (e.key === "Enter" || e.key === "Escape") {
+                e.preventDefault();
+                sair(e.key === "Enter", true);
+              }
             }}
             className="w-[150px] rounded-2xl border border-tinta bg-white text-center font-display text-[48px] leading-none font-bold tracking-[-0.04em] tabular-nums focus:outline-none"
           />
         ) : (
           <button
+            ref={numero}
             type="button"
             aria-label={`Digitar o peso: ${peso(valor)}`}
             onClick={() => {

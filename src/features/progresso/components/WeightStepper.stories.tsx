@@ -50,3 +50,23 @@ export const Digitando: Story = {
     await expect(tela.getByRole('button', { name: 'Digitar o peso: 59,3 kg' })).toBeInTheDocument();
   },
 };
+
+export const DigitandoPorCima: Story = {
+  play: async ({ canvasElement, args }) => {
+    const tela = within(canvasElement);
+    await userEvent.click(tela.getByRole('button', { name: 'Digitar o peso: 58,4 kg' }));
+    await userEvent.keyboard('59{Enter}');
+    await expect(args.aoMudar).toHaveBeenLastCalledWith(59);
+    await expect(tela.getByRole('button', { name: 'Digitar o peso: 59,0 kg' })).toHaveFocus();
+  },
+};
+
+export const EscapeDevolveOFoco: Story = {
+  play: async ({ canvasElement, args }) => {
+    const tela = within(canvasElement);
+    await userEvent.click(tela.getByRole('button', { name: 'Digitar o peso: 58,4 kg' }));
+    await userEvent.keyboard('{Escape}');
+    await expect(tela.getByRole('button', { name: 'Digitar o peso: 58,4 kg' })).toHaveFocus();
+    await expect(args.aoMudar).not.toHaveBeenCalled();
+  },
+};
