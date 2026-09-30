@@ -35,9 +35,21 @@ async function registro(): Promise<ServiceWorkerRegistration> {
   return navigator.serviceWorker.ready;
 }
 
+/** A inscrição deste navegador, sem registrar o service worker só para perguntar. */
 export async function inscricaoAtual(): Promise<PushSubscription | null> {
   if (!temPush()) return null;
-  return (await registro()).pushManager.getSubscription();
+  const reg = await navigator.serviceWorker.getRegistration('/');
+  return reg ? reg.pushManager.getSubscription() : null;
+}
+
+export async function endpointAtual(): Promise<string | null> {
+  return (await inscricaoAtual())?.endpoint ?? null;
+}
+
+/** O corpo que o `POST /push-subscriptions` espera. */
+export function jsonDaInscricao(inscricao: PushSubscription): InscricaoJson {
+  const json = inscricao.toJSON() as { endpoint: string; keys: { p256dh: string; auth: string } };
+  return { endpoint: json.endpoint, keys: { p256dh: json.keys.p256dh, auth: json.keys.auth }, contentEncoding: 'aes128gcm' };
 }
 
 /** Pede a permissão (só aqui, CA01) e inscreve este navegador. */
@@ -45,11 +57,10 @@ export async function inscrever(chaveVapid: string): Promise<InscricaoJson | 'ne
   const permissao = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
   if (permissao !== 'granted') return 'negada';
   const inscricao = await (await registro()).pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: chaveParaBytes(chaveVapid) });
-  const json = inscricao.toJSON() as { endpoint: string; keys: { p256dh: string; auth: string } };
-  return { endpoint: json.endpoint, keys: { p256dh: json.keys.p256dh, auth: json.keys.auth }, contentEncoding: 'aes128gcm' };
+  return jsonDaInscricao(inscricao);
 }
 
-/** Logout (CA07): tira a inscrição deste navegador e devolve o endpoint para o servidor apagar. */
+/** Depois do logout (CA07): tira a inscrição deste navegador; devolve o endpoint cancelado. */
 export async function cancelarInscricao(): Promise<string | null> {
   const atual = await inscricaoAtual();
   if (!atual) return null;

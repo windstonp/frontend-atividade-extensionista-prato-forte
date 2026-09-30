@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { recarregarEm } from '@/lib/navegar';
-import { cancelarInscricao } from '@/lib/push';
+import { cancelarInscricao, endpointAtual } from '@/lib/push';
 import { usuarioApi } from '@/mocks/fixtures/usuario';
 import { erroDaApi, url } from '@/mocks/handlers/auth';
 import { server } from '@/mocks/server';
@@ -13,11 +13,12 @@ import { ContaSection } from './ContaSection';
 
 vi.mock('next/navigation', () => import('@/test/next-navigation'));
 vi.mock('@/lib/navegar', () => ({ recarregarEm: vi.fn() }));
-vi.mock('@/lib/push', () => ({ cancelarInscricao: vi.fn(async () => null) }));
+vi.mock('@/lib/push', () => ({ endpointAtual: vi.fn(async () => null), cancelarInscricao: vi.fn(async () => null) }));
 
 beforeEach(() => {
   redefinirNavegacao();
   vi.mocked(recarregarEm).mockReset();
+  vi.mocked(cancelarInscricao).mockClear();
   server.use(http.get(url('/me'), () => HttpResponse.json({ data: usuarioApi })));
 });
 
@@ -92,9 +93,13 @@ describe('Sua conta', () => {
     expect(recarregarEm).not.toHaveBeenCalled();
   });
 
-  it('sair tira a inscrição deste navegador antes do logout (CA07)', async () => {
-    vi.mocked(cancelarInscricao).mockResolvedValueOnce('https://fcm.googleapis.com/fcm/send/abc');
+  it('sair: apaga a inscrição no servidor, faz logout e só então a tira do navegador (CA07)', async () => {
+    vi.mocked(endpointAtual).mockResolvedValueOnce('https://fcm.googleapis.com/fcm/send/abc');
     const ordem: string[] = [];
+    vi.mocked(cancelarInscricao).mockImplementationOnce(async () => {
+      ordem.push('navegador');
+      return null;
+    });
     server.use(
       http.delete(url('/push-subscriptions'), async ({ request }) => {
         ordem.push(`delete ${((await request.json()) as { endpoint: string }).endpoint}`);
@@ -110,23 +115,21 @@ describe('Sua conta', () => {
     await userEvent.setup().click(await screen.findByRole('button', { name: /Sair desta conta/ }));
 
     await waitFor(() => expect(recarregarEm).toHaveBeenCalledWith('/'));
-    expect(ordem).toEqual(['delete https://fcm.googleapis.com/fcm/send/abc', 'logout']);
+    expect(ordem).toEqual(['delete https://fcm.googleapis.com/fcm/send/abc', 'logout', 'navegador']);
   });
 
-  it('se tirar a inscrição falhar (offline), sai mesmo assim', async () => {
-    vi.mocked(cancelarInscricao).mockRejectedValueOnce(new Error('offline'));
-    let saiu = false;
+  it('offline: não sai, avisa e o navegador continua inscrito', async () => {
+    vi.mocked(endpointAtual).mockResolvedValueOnce('https://fcm.googleapis.com/fcm/send/abc');
     server.use(
-      http.post(url('/logout'), () => {
-        saiu = true;
-        return new HttpResponse(null, { status: 204 });
-      }),
+      http.delete(url('/push-subscriptions'), () => HttpResponse.error()),
+      http.post(url('/logout'), () => HttpResponse.error()),
     );
 
     renderizar(<ContaSection />);
     await userEvent.setup().click(await screen.findByRole('button', { name: /Sair desta conta/ }));
 
-    await waitFor(() => expect(recarregarEm).toHaveBeenCalledWith('/'));
-    expect(saiu).toBe(true);
+    expect(await screen.findByText('Não deu para sair agora. Tente de novo.')).toBeInTheDocument();
+    expect(cancelarInscricao).not.toHaveBeenCalled();
+    expect(recarregarEm).not.toHaveBeenCalled();
   });
 });

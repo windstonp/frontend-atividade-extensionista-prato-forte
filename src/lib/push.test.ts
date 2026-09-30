@@ -13,7 +13,13 @@ function navegador({ push = true, permissao = 'granted' as NotificationPermissio
   vi.stubGlobal('PushManager', push ? function PushManager() {} : undefined);
   Object.defineProperty(window.navigator, 'serviceWorker', {
     configurable: true,
-    value: push ? { register: vi.fn(async () => ({})), ready: Promise.resolve({ pushManager: { subscribe, getSubscription: vi.fn(async () => atual) } }) } : undefined,
+    value: push
+      ? {
+          register: vi.fn(async () => ({})),
+          ready: Promise.resolve({ pushManager: { subscribe, getSubscription: vi.fn(async () => atual) } }),
+          getRegistration: vi.fn(async () => ({ pushManager: { getSubscription: vi.fn(async () => atual) } })),
+        }
+      : undefined,
   });
   Object.defineProperty(window.navigator, 'userAgent', { configurable: true, value: ios ? 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)' : 'Mozilla/5.0 (Linux; Android 14)' });
   Object.defineProperty(window.navigator, 'standalone', { configurable: true, value: instalado });

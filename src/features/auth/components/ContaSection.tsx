@@ -7,7 +7,7 @@ import { useToast } from "@/components/ui/Toaster";
 import { removerInscricao } from "@/lib/api/configuracoes";
 import { ApiError } from "@/lib/api/errors";
 import { recarregarEm } from "@/lib/navegar";
-import { cancelarInscricao } from "@/lib/push";
+import { cancelarInscricao, endpointAtual } from "@/lib/push";
 import { useDeleteAccount, useLogout, useMe } from "../hooks";
 import { DeleteAccountSheet } from "./DeleteAccountSheet";
 
@@ -22,21 +22,24 @@ export function ContaSection() {
   const [folhaAberta, setFolhaAberta] = useState(false);
 
   async function aoSair() {
-    // CA07: este navegador para de receber avisos. Falhar aqui (offline) não impede sair.
+    // CA07: o servidor esquece a inscrição deste navegador enquanto a sessão vale; falhar aqui não impede sair.
     try {
-      const endpoint = await cancelarInscricao();
+      const endpoint = await endpointAtual();
       if (endpoint) await removerInscricao(endpoint);
     } catch {
       /* segue para o logout */
     }
     try {
       await sair.mutateAsync();
-      recarregarEm("/"); // recarga = cache, formulários e sessão do cliente zerados (RF03)
     } catch (erro) {
       // 401: a sessão já tinha acabado — para quem tocou em "Sair", o resultado é o mesmo.
-      if (erro instanceof ApiError && erro.status === 401) recarregarEm("/");
-      else avisar({ texto: "Não deu para sair agora. Tente de novo." });
+      if (!(erro instanceof ApiError && erro.status === 401)) {
+        avisar({ texto: "Não deu para sair agora. Tente de novo." });
+        return; // offline: continua logado e inscrito
+      }
     }
+    await cancelarInscricao().catch(() => null); // só depois de sair, o navegador para de receber
+    recarregarEm("/"); // recarga = cache, formulários e sessão do cliente zerados (RF03)
   }
 
   async function aoApagar(senha: string) {

@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { ErrorState } from "@/components/app/ErrorState";
 import { Screen } from "@/components/app/Screen";
@@ -11,7 +12,8 @@ import { ContaSection } from "@/features/auth/components/ContaSection";
 import { usePerfil } from "@/features/perfil/hooks";
 import { enviarInscricao } from "@/lib/api/configuracoes";
 import { comoApiError } from "@/lib/api/errors";
-import { inscrever, inscricaoAtual, suportePush } from "@/lib/push";
+import { inscrever, inscricaoAtual, jsonDaInscricao, suportePush } from "@/lib/push";
+import { Button } from "@/components/ui/Button";
 import { useConfiguracoes, useSalvarConfiguracoes } from "../hooks";
 import type { Avisos, SistemaDeMedidas } from "../tipos";
 import { AvisosNoCelular, type EstadoDosAvisos } from "./AvisosNoCelular";
@@ -25,36 +27,47 @@ export function ConfiguracoesTela() {
   const [negada, setNegada] = useState(false);
   const [inscrevendo, setInscrevendo] = useState(false);
   const dados = configuracoes.data;
+  // A inscrição deste celular (não a contagem do servidor, que inclui outros aparelhos).
+  const local = useQuery({ queryKey: ["push-local"], queryFn: inscricaoAtual, enabled: suportePush() === "ok" });
   const versao = process.env.NEXT_PUBLIC_APP_VERSION;
 
   const suporte = suportePush();
   const estado: EstadoDosAvisos =
     suporte !== "ok" ? suporte : !dados?.push.vapidPublicKey ? "sem-servidor" : negada ? "negada" : "ok";
 
+  /**
+   * Garante a inscrição deste navegador no servidor. Pede a permissão só se ainda não há inscrição
+   * aqui (CA01); se já há, reenvia (upsert): o servidor pode tê-la perdido ou ela ser de outra conta.
+   */
+  async function ativarNesteCelular(chaveVapid: string): Promise<boolean> {
+    setInscrevendo(true);
+    try {
+      const atual = await inscricaoAtual();
+      const inscricao = atual ? jsonDaInscricao(atual) : await inscrever(chaveVapid);
+      if (inscricao === "negada") {
+        setNegada(true);
+        return false;
+      }
+      await enviarInscricao(inscricao);
+      setNegada(false);
+      void local.refetch();
+      return true;
+    } catch (erro) {
+      avisar({ texto: comoApiError(erro).message });
+      return false;
+    } finally {
+      setInscrevendo(false);
+    }
+  }
+
   async function mudarAviso(chave: keyof Avisos, valor: boolean) {
     if (!dados) return;
-    if (valor && dados.push.vapidPublicKey) {
-      setInscrevendo(true);
-      try {
-        // A permissão é pedida só aqui, ao ligar (CA01); a inscrição é a deste navegador.
-        if (!(await inscricaoAtual())) {
-          const inscricao = await inscrever(dados.push.vapidPublicKey);
-          if (inscricao === "negada") {
-            setNegada(true);
-            return;
-          }
-          await enviarInscricao(inscricao);
-        }
-        setNegada(false);
-      } catch (erro) {
-        avisar({ texto: comoApiError(erro).message });
-        return;
-      } finally {
-        setInscrevendo(false);
-      }
-    }
+    if (valor && dados.push.vapidPublicKey && !(await ativarNesteCelular(dados.push.vapidPublicKey))) return;
     salvar.mutate({ notifications: { [chave]: valor } });
   }
+
+  const algumLigado = dados ? Object.values(dados.notifications).some(Boolean) : false;
+  const faltaNesteCelular = estado === "ok" && algumLigado && local.isSuccess && local.data === null;
 
   return (
     <Screen>
@@ -77,6 +90,19 @@ export function ConfiguracoesTela() {
         ) : (
           <>
             <AvisosNoCelular avisos={dados.notifications} estado={estado} salvando={salvar.isPending || inscrevendo} aoMudar={(c, v) => void mudarAviso(c, v)} />
+            {faltaNesteCelular && dados.push.vapidPublicKey ? (
+              <div className="mt-3 animate-entra rounded-2xl bg-gema-fraca px-4 py-3.5">
+                <p className="text-[13px] leading-snug text-gema-texto">Seus avisos estão ligados, mas este celular ainda não recebe.</p>
+                <Button
+                  tamanho="media"
+                  className="mt-2.5 w-full"
+                  carregando={inscrevendo}
+                  onClick={() => void ativarNesteCelular(dados.push.vapidPublicKey as string)}
+                >
+                  Ativar avisos neste celular
+                </Button>
+              </div>
+            ) : null}
             <div className="mt-[22px]">
               <Segmento
                 label="Medidas"

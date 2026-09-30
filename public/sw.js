@@ -1,7 +1,16 @@
 /* Service worker do Prato Forte: só avisos (spec 06). Sem cache offline. */
 
+// Assume já as abas abertas: numa aba sem controle, `navigate()` falha ao tocar no aviso.
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', (evento) => evento.waitUntil(self.clients.claim()));
+
 self.addEventListener('push', (evento) => {
-  const dados = evento.data ? evento.data.json() : {};
+  let dados = {};
+  try {
+    dados = evento.data ? evento.data.json() : {};
+  } catch {
+    dados = {}; // payload que não é JSON: aviso padrão
+  }
   evento.waitUntil(
     self.registration.showNotification(dados.title || 'Prato Forte', {
       body: dados.body || '',
@@ -19,8 +28,11 @@ self.addEventListener('notificationclick', (evento) => {
   evento.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((abas) => {
       const aberta = abas.find((aba) => aba.url.startsWith(self.location.origin));
-      if (aberta) return aberta.navigate(url).then((aba) => aba && aba.focus());
-      return self.clients.openWindow(url);
+      if (!aberta) return self.clients.openWindow(url);
+      return aberta
+        .navigate(url)
+        .then((aba) => (aba ? aba.focus() : self.clients.openWindow(url)))
+        .catch(() => self.clients.openWindow(url));
     }),
   );
 });

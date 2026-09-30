@@ -11,7 +11,8 @@ import { renderizar } from '@/test/renderizar';
 import { ConfiguracoesTela } from './ConfiguracoesTela';
 
 vi.mock('next/navigation', () => import('@/test/next-navigation'));
-vi.mock('@/lib/push', () => ({
+vi.mock('@/lib/push', async (original) => ({
+  jsonDaInscricao: (await original<typeof import('@/lib/push')>()).jsonDaInscricao,
   suportePush: vi.fn(() => 'ok'),
   inscricaoAtual: vi.fn(async () => null),
   inscrever: vi.fn(async () => ({ endpoint: 'https://fcm.googleapis.com/fcm/send/abc', keys: { p256dh: 'BPublica', auth: 'segredo' }, contentEncoding: 'aes128gcm' })),
@@ -19,6 +20,10 @@ vi.mock('@/lib/push', () => ({
 }));
 
 const corpos: { put: unknown[]; post: unknown[] } = { put: [], post: [] };
+const inscricaoDoNavegador = {
+  endpoint: 'https://fcm.googleapis.com/fcm/send/velha',
+  toJSON: () => ({ endpoint: 'https://fcm.googleapis.com/fcm/send/velha', keys: { p256dh: 'BVelha', auth: 'a' } }),
+} as unknown as PushSubscription;
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -53,8 +58,8 @@ describe('Configurações (S19)', () => {
     expect(screen.getByRole('switch', { name: 'Dicas do Nutri' })).toHaveAttribute('aria-checked', 'true');
   });
 
-  it('com inscrição neste navegador, só salva', async () => {
-    vi.mocked(push.inscricaoAtual).mockResolvedValue({ endpoint: 'x' } as PushSubscription);
+  it('com inscrição neste navegador: não pede permissão, mas reenvia a inscrição (servidor pode tê-la perdido ou ser outra conta)', async () => {
+    vi.mocked(push.inscricaoAtual).mockResolvedValue(inscricaoDoNavegador);
     const usuario = userEvent.setup();
     renderizar(<ConfiguracoesTela />);
 
@@ -62,6 +67,27 @@ describe('Configurações (S19)', () => {
 
     await waitFor(() => expect(corpos.put).toHaveLength(1));
     expect(push.inscrever).not.toHaveBeenCalled();
+    expect(corpos.post).toEqual([{ endpoint: 'https://fcm.googleapis.com/fcm/send/velha', keys: { p256dh: 'BVelha', auth: 'a' }, content_encoding: 'aes128gcm' }]);
+  });
+
+  it('avisos ligados (padrão) mas este celular sem inscrição: oferece "Ativar avisos neste celular"', async () => {
+    const usuario = userEvent.setup();
+    renderizar(<ConfiguracoesTela />);
+
+    await usuario.click(await screen.findByRole('button', { name: 'Ativar avisos neste celular' }));
+
+    await waitFor(() => expect(corpos.post).toHaveLength(1));
+    expect(push.inscrever).toHaveBeenCalledWith('BChaveDeTeste');
+    expect(corpos.put).toEqual([]);
+  });
+
+  it('com inscrição neste celular, o botão de ativar não aparece', async () => {
+    vi.mocked(push.inscricaoAtual).mockResolvedValue(inscricaoDoNavegador);
+    renderizar(<ConfiguracoesTela />);
+
+    await screen.findByRole('switch', { name: 'Dicas do Nutri' });
+    await new Promise((r) => setTimeout(r, 50));
+    expect(screen.queryByRole('button', { name: 'Ativar avisos neste celular' })).toBeNull();
   });
 
   it('permissão negada: volta a desligado e explica (CA02)', async () => {
@@ -87,7 +113,7 @@ describe('Configurações (S19)', () => {
   });
 
   it('erro no PUT: o toggle volta e avisa', async () => {
-    vi.mocked(push.inscricaoAtual).mockResolvedValue({ endpoint: 'x' } as PushSubscription);
+    vi.mocked(push.inscricaoAtual).mockResolvedValue(inscricaoDoNavegador);
     server.use(http.put(url('/settings'), () => erroDaApi(500, 'SERVER_ERROR', 'Algo deu errado do nosso lado. Tente de novo.')));
     const usuario = userEvent.setup();
     renderizar(<ConfiguracoesTela />);
