@@ -37,12 +37,11 @@ export default defineConfig([
   // LEGADO — telas do protótipo ainda ligadas ao mock. Cada plano de feature REMOVE daqui os
   // arquivos que migrar; o Plano 08 apaga os dois blocos. Nada novo entra nesta lista.
   {
-    files: ['src/lib/mock-api.ts', 'src/app/(app)/nutri/page.tsx'],
+    files: ['src/lib/mock-api.ts'],
     rules: { 'no-restricted-imports': 'off' },
   },
   {
     files: [
-      'src/app/(app)/nutri/page.tsx',
       'src/components/ui/Sheet.tsx',
       'src/components/ui/Toast.tsx',
       'src/lib/motion.ts',
