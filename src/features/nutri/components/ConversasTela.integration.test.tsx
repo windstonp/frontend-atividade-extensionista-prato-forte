@@ -101,4 +101,37 @@ describe('Conversas (N05)', () => {
     expect(await screen.findByText('Não foi possível carregar suas conversas', {}, { timeout: 5000 })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Nova conversa' })).toBeEnabled();
   });
+
+  it('apagar a última conversa não abre outra sozinho nem deixa a tela carregando', async () => {
+    comConversas(3);
+    let criou = false;
+    server.use(
+      http.delete(url('/conversations/3'), () => new HttpResponse(null, { status: 204 })),
+      http.post(url('/conversations'), () => {
+        criou = true;
+        return HttpResponse.json({ data: conversaApi(9, { vazia: true }) }, { status: 201 });
+      }),
+    );
+    const usuario = userEvent.setup();
+
+    renderizar(<ConversasTela />);
+    const linha = (await screen.findByRole('link', { name: /Conversa 3/ })).closest('li') as HTMLElement;
+    await usuario.click(within(linha).getByRole('button', { name: 'Apagar' }));
+    await usuario.click(within(await screen.findByRole('dialog', { name: 'Apagar esta conversa?' })).getByRole('button', { name: 'Apagar' }));
+
+    expect(await screen.findByText('Nenhuma conversa por aqui. Comece uma nova quando quiser.')).toBeInTheDocument();
+    expect(screen.queryByRole('status', { name: 'Carregando conversas' })).toBeNull();
+    expect(criou).toBe(false);
+    expect(roteador.replace).not.toHaveBeenCalled();
+  });
+
+  it('sem conversas e a criação falha: avisa e deixa "Nova conversa" à mão, sem esqueleto eterno', async () => {
+    server.use(http.post(url('/conversations'), () => HttpResponse.json({ message: 'Algo deu errado do nosso lado. Tente de novo.', code: 'SERVER_ERROR' }, { status: 500 })));
+
+    renderizar(<ConversasTela />);
+
+    expect(await screen.findByText('Nenhuma conversa por aqui. Comece uma nova quando quiser.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Nova conversa' })).toBeEnabled();
+  });
 });
+

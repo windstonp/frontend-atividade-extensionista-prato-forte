@@ -216,4 +216,82 @@ describe('Chat do Nutri (S14)', () => {
     expect(await screen.findByText('A primeira pergunta')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Ver mensagens anteriores' })).toBeNull();
   });
+
+  it('carregar mensagens antigas não joga a tela para o fim', async () => {
+    const rolar = vi.fn();
+    Element.prototype.scrollIntoView = rolar;
+    server.use(
+      conversa(5),
+      http.get(url('/conversations/5/messages'), ({ request }) => {
+        const cursor = new URL(request.url).searchParams.get('cursor');
+        return HttpResponse.json(
+          cursor
+            ? { data: [mensagemUsuarioApi(1, 'A primeira pergunta')], meta: { next_cursor: null, per_page: 30 } }
+            : { data: [respostaTrocaApi(12, { acoes: false }), mensagemUsuarioApi(11)], meta: { next_cursor: 'c1', per_page: 30 } },
+        );
+      }),
+    );
+
+    renderizar(<ChatTela id={5} />);
+    const anteriores = await screen.findByRole('button', { name: 'Ver mensagens anteriores' });
+    rolar.mockClear();
+    await userEvent.setup().click(anteriores);
+    await screen.findByText('A primeira pergunta');
+
+    expect(rolar).not.toHaveBeenCalled();
+    delete (Element.prototype as { scrollIntoView?: unknown }).scrollIntoView;
+  });
+
+  it('erro ao carregar a conversa: ErrorState com "Tentar de novo"', async () => {
+    let tentativas = 0;
+    server.use(
+      conversa(5),
+      http.get(url('/conversations/5/messages'), () => {
+        tentativas++;
+        return tentativas === 1 ? erroDaApi(500, 'SERVER_ERROR', 'x') : HttpResponse.json({ data: [mensagemUsuarioApi(11, 'Voltou')], meta: { next_cursor: null, per_page: 30 } });
+      }),
+    );
+
+    renderizar(<ChatTela id={5} />);
+    expect(await screen.findByText('Não foi possível carregar a conversa')).toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Tentar de novo' }));
+
+    expect(await screen.findByText('Voltou')).toBeInTheDocument();
+  });
+
+  it('conversa apagada em outra aba durante o chat: enviar leva a "Conversa não encontrada"', async () => {
+    server.use(conversa(5, true), respondendoMensagens(5, []), http.post(url('/conversations/5/messages'), () => erroDaApi(404, 'NOT_FOUND', 'Não encontrado.')));
+    const usuario = userEvent.setup();
+
+    renderizar(<ChatTela id={5} />);
+    await usuario.type(await screen.findByLabelText('Escreva sua pergunta para o Nutri'), 'Oi');
+    await usuario.click(screen.getByRole('button', { name: 'Enviar pergunta' }));
+
+    expect(await screen.findByRole('heading', { name: 'Conversa não encontrada' })).toBeInTheDocument();
+  });
+
+  it('erro do servidor ao enviar não finge falta de internet: avisa e devolve a pergunta ao campo', async () => {
+    server.use(conversa(5, true), respondendoMensagens(5, []), http.post(url('/conversations/5/messages'), () => erroDaApi(500, 'SERVER_ERROR', 'Algo deu errado do nosso lado. Tente de novo.')));
+    const usuario = userEvent.setup();
+
+    renderizar(<ChatTela id={5} />);
+    await usuario.type(await screen.findByLabelText('Escreva sua pergunta para o Nutri'), 'Oi');
+    await usuario.click(screen.getByRole('button', { name: 'Enviar pergunta' }));
+
+    expect(await screen.findByText('Algo deu errado do nosso lado. Tente de novo.')).toBeInTheDocument();
+    expect(screen.queryByText('Sem conexão')).toBeNull();
+    expect(screen.getByLabelText('Escreva sua pergunta para o Nutri')).toHaveValue('Oi');
+  });
+
+  it('o histórico não é anunciado inteiro; a resposta nova é', async () => {
+    server.use(conversa(5, true), respondendoMensagens(5, []), respondendoPergunta());
+    const usuario = userEvent.setup();
+
+    renderizar(<ChatTela id={5} />);
+    await usuario.type(await screen.findByLabelText('Escreva sua pergunta para o Nutri'), 'Posso trocar o arroz por batata?');
+    await usuario.click(screen.getByRole('button', { name: 'Enviar pergunta' }));
+
+    expect(screen.getByRole('main')).not.toHaveAttribute('aria-live');
+    expect(await screen.findByText(/^O Nutri respondeu: Pode\. No seu almoço/)).toHaveAttribute('aria-live', 'polite');
+  });
 });

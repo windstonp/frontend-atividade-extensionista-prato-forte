@@ -40,7 +40,9 @@ export function ConversasTela() {
 
   // Sem conversas anteriores: pula a lista (RF19). Só com a resposta do servidor em mãos:
   // a lista vazia guardada da primeira visita não conta.
-  const semNenhuma = conversas.isSuccess && !conversas.isFetching && lista.length === 0;
+  // Quem acabou de apagar a última fica aqui, com "Nova conversa" à mão.
+  const semNenhuma = conversas.isSuccess && !conversas.isFetching && lista.length === 0 && apagar.isIdle;
+  const carregando = !conversas.data || (lista.length === 0 && (conversas.isFetching || (semNenhuma && !nova.isError)));
   useEffect(() => {
     if (semNenhuma && nova.isIdle) void comecar(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -86,12 +88,14 @@ export function ConversasTela() {
               aoTentarDeNovo={() => void conversas.refetch()}
             />
           </div>
-        ) : !conversas.data || lista.length === 0 ? (
+        ) : carregando ? (
           <div className="mt-6 flex flex-col gap-3" role="status" aria-label="Carregando conversas">
             <Skeleton className="h-[74px] rounded-2xl" />
             <Skeleton className="h-[74px] rounded-2xl" />
             <Skeleton className="h-[74px] rounded-2xl" />
           </div>
+        ) : lista.length === 0 ? (
+          <p className="mt-7 animate-entra text-sm leading-normal text-fumo">Nenhuma conversa por aqui. Comece uma nova quando quiser.</p>
         ) : (
           <>
             <h2 className="mt-7 animate-entra font-display text-[15px] font-semibold" style={{ animationDelay: "220ms" }}>

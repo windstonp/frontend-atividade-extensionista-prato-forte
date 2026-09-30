@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { ErrorState } from "@/components/app/ErrorState";
 import { Screen } from "@/components/app/Screen";
 import { TopBar } from "@/components/app/TopBar";
 import { IconeAvancar, MarcaNutri } from "@/components/icons";
@@ -52,15 +53,30 @@ export function ChatTela({ id }: { id: number }) {
   const [rascunho, setRascunho] = useState(() => perguntaDaUrl(busca.get("pergunta")));
   const [pendente, setPendente] = useState<Pendente | null>(null);
   const [aplicando, setAplicando] = useState<number | null>(null);
+  const [perdida, setPerdida] = useState(false);
+  const [anuncio, setAnuncio] = useState("");
   const fim = useRef<HTMLDivElement>(null);
+  const alturaAntes = useRef<number | null>(null);
   const sequencia = useRef(0);
   const lista = juntarPaginas(mensagens.data?.pages.map((p) => p.data) ?? []);
+  const primeiroId = lista[0]?.id;
+  const ultimoId = lista.at(-1)?.id;
   const proxima = dia.data?.meals.find((m) => m.isNext);
   const offline = !online || pendente?.status === "falhou";
 
+  // Desce só quando chega mensagem nova no fim (ou uma pendente); mensagens antigas entram em cima.
   useEffect(() => {
-    fim.current?.scrollIntoView?.({ behavior: "smooth", block: "end" });
-  }, [lista.length, pendente]);
+    const reduzir = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    fim.current?.scrollIntoView?.({ behavior: reduzir ? "auto" : "smooth", block: "end" });
+  }, [ultimoId, pendente]);
+
+  // Depois de carregar mensagens anteriores, mantém na tela o que a pessoa estava lendo.
+  useLayoutEffect(() => {
+    if (alturaAntes.current === null) return;
+    const diferenca = document.documentElement.scrollHeight - alturaAntes.current;
+    alturaAntes.current = null;
+    if (diferenca > 0) window.scrollBy(0, diferenca);
+  }, [primeiroId]);
 
   async function enviar(texto: string) {
     const pergunta = texto.trim();
@@ -73,18 +89,27 @@ export function ChatTela({ id }: { id: number }) {
     }
     setPendente(local);
     try {
-      await perguntar.mutateAsync(pergunta);
+      const { assistantMessage } = await perguntar.mutateAsync(pergunta);
       setPendente(null);
+      setAnuncio(`O Nutri respondeu: ${assistantMessage.content}`);
     } catch (e) {
       const erro = comoApiError(e);
-      if (erro.code === "TOO_MANY_REQUESTS") {
-        const segundos = Number(erro.details.retryAfter) || 60;
-        avisar({ texto: `Muitas perguntas seguidas. Tente de novo em ${segundos} segundos.` });
-        setPendente(null);
-        setRascunho(pergunta);
+      if (erro.status === 404) {
+        setPerdida(true); // apagada em outra aba
         return;
       }
-      setPendente({ ...local, status: "falhou" });
+      // Sem internet (0) ou IA fora (503): a pergunta fica "Não enviada", com "Tentar de novo".
+      if (erro.status === 0 || erro.status === 503) {
+        setPendente({ ...local, status: "falhou" });
+        return;
+      }
+      const texto =
+        erro.code === "TOO_MANY_REQUESTS"
+          ? `Muitas perguntas seguidas. Tente de novo em ${Number(erro.details.retryAfter) || 60} segundos.`
+          : erro.message;
+      avisar({ texto });
+      setPendente(null);
+      setRascunho(pergunta);
     }
   }
 
@@ -104,7 +129,8 @@ export function ChatTela({ id }: { id: number }) {
     );
   }
 
-  if (conversa.isError && comoApiError(conversa.error).status === 404) {
+  const naoExiste = (erro: unknown) => erro != null && comoApiError(erro).status === 404;
+  if (perdida || naoExiste(conversa.error) || naoExiste(mensagens.error)) {
     return (
       <Screen>
         <TopBar voltarPara="/nutri" rotuloVoltar="Voltar para as conversas" />
@@ -143,10 +169,19 @@ export function ChatTela({ id }: { id: number }) {
 
       <AvisoDeAlteracao alteracao={dia.data?.lastChange ?? null} />
 
-      <main className="flex-1 px-5 pt-4" aria-live="polite">
+      <main className="flex-1 px-5 pt-4">
+        <p className="sr-only" aria-live="polite">
+          {anuncio}
+        </p>
         {offline ? <OfflineNotice /> : null}
 
-        {mensagens.isPending ? (
+        {mensagens.isError ? (
+          <ErrorState
+            titulo="Não foi possível carregar a conversa"
+            descricao="Suas mensagens estão salvas. Só a conexão falhou agora."
+            aoTentarDeNovo={() => void mensagens.refetch()}
+          />
+        ) : mensagens.isPending ? (
           <div className="flex flex-col gap-4" role="status" aria-label="Carregando a conversa">
             <Skeleton className="ml-auto h-12 w-2/3 rounded-[18px]" />
             <Skeleton className="h-24 rounded-[18px]" />
@@ -159,7 +194,10 @@ export function ChatTela({ id }: { id: number }) {
             {mensagens.hasNextPage ? (
               <button
                 type="button"
-                onClick={() => void mensagens.fetchNextPage()}
+                onClick={() => {
+                  alturaAntes.current = document.documentElement.scrollHeight;
+                  void mensagens.fetchNextPage();
+                }}
                 className="mx-auto h-9 rounded-full px-4 text-[13px] font-semibold text-mata"
               >
                 Ver mensagens anteriores
