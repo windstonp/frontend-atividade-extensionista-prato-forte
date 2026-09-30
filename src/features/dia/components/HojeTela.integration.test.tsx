@@ -32,7 +32,7 @@ describe('Hoje (S11)', () => {
   it('marca a refeição na hora e envia ao servidor (RF13)', async () => {
     let corpo: unknown;
     server.use(
-      http.patch(url('/days/today/meals/cafe'), async ({ request }) => {
+      http.patch(url('/days/2026-09-28/meals/cafe'), async ({ request }) => {
         corpo = await request.json();
         return HttpResponse.json({ data: diaApi({ feitas: ['cafe'] }) });
       }),
@@ -46,7 +46,7 @@ describe('Hoje (S11)', () => {
   });
 
   it('se salvar falhar, volta como estava e avisa', async () => {
-    server.use(http.patch(url('/days/today/meals/cafe'), () => erroDaApi(500, 'SERVER_ERROR', 'x')));
+    server.use(http.patch(url('/days/2026-09-28/meals/cafe'), () => erroDaApi(500, 'SERVER_ERROR', 'x')));
 
     renderizar(<HojeTela />);
     await userEvent.setup().click(await screen.findByRole('button', { name: 'Marcar café da manhã como feita' }));
@@ -59,7 +59,7 @@ describe('Hoje (S11)', () => {
     let desfez = false;
     server.use(
       respondendoDia(diaApi({ ultimaAlteracao: { id: 7, text: 'Arroz branco cozido trocado por batata-doce cozida' } })),
-      http.post(url('/days/today/undo'), () => {
+      http.post(url('/days/2026-09-28/undo'), () => {
         desfez = true;
         return HttpResponse.json({ data: diaApi() });
       }),

@@ -15,9 +15,12 @@ const ALTURA_LINHA = 46;
 export function DayRail({
   refeicoes,
   aoAlternar,
+  ocupado = false,
 }: {
   refeicoes: RefeicaoDoDia[];
   aoAlternar: (slot: Slot, done: boolean) => void;
+  /** Uma marcação ainda está a caminho do servidor: o botão espera. */
+  ocupado?: boolean;
 }) {
   const montado = useMontado(120);
   const proxima = refeicoes.find((m) => m.isNext);
@@ -45,7 +48,7 @@ export function DayRail({
         <ol className="list-none">
           {refeicoes.map((refeicao, i) =>
             refeicao.slot === proxima?.slot ? (
-              <ProximaRefeicao key={refeicao.slot} refeicao={refeicao} indice={i} aoAlternar={aoAlternar} />
+              <ProximaRefeicao key={refeicao.slot} refeicao={refeicao} indice={i} aoAlternar={aoAlternar} ocupado={ocupado} />
             ) : (
               <LinhaCompacta key={refeicao.slot} refeicao={refeicao} indice={i} />
             ),
@@ -85,10 +88,12 @@ function ProximaRefeicao({
   refeicao,
   indice,
   aoAlternar,
+  ocupado,
 }: {
   refeicao: RefeicaoDoDia;
   indice: number;
   aoAlternar: (slot: Slot, done: boolean) => void;
+  ocupado: boolean;
 }) {
   return (
     <li className="relative my-2 animate-escala" style={cascata(indice, 70, 180)}>
@@ -123,9 +128,10 @@ function ProximaRefeicao({
           <button
             type="button"
             onClick={() => aoAlternar(refeicao.slot, true)}
+            disabled={ocupado}
             aria-pressed={false}
             aria-label={`Marcar ${refeicao.name.toLowerCase()} como feita`}
-            className="group flex size-11 shrink-0 items-center justify-center rounded-full border-[1.5px] border-tinta transition-[background-color,color] duration-250 hover:bg-tinta hover:text-neve active:scale-90"
+            className="group flex size-11 shrink-0 items-center justify-center rounded-full border-[1.5px] border-tinta transition-[background-color,color] duration-250 hover:bg-tinta hover:text-neve active:scale-90 disabled:opacity-60"
           >
             <IconeCheck
               size={19}

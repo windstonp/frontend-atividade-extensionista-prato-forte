@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback } from 'react';
 import { useToast } from '@/components/ui/Toaster';
 import type { EfeitoNoPlano } from '@/features/onboarding/tipos';
+import { comoApiError } from '@/lib/api/errors';
 import { CHAVES } from '@/lib/chaves';
 import { usePedirPlano } from './hooks';
 
@@ -30,7 +31,11 @@ export function useEfeitoNoPlano() {
           texto: opcoes.aviso ?? 'Salvo. Quer refazer seu plano com isso?',
           acao: {
             rotulo: 'Refazer',
-            onClick: () => void pedir.mutateAsync().then((id) => router.push(GERANDO(id))),
+            onClick: () =>
+              void pedir
+                .mutateAsync()
+                .then((id) => router.push(GERANDO(id)))
+                .catch((erro: unknown) => avisar({ texto: comoApiError(erro).message })),
           },
         });
       } else {

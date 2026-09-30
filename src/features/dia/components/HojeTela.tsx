@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { BottomNav } from "@/components/app/BottomNav";
 import { ErrorState } from "@/components/app/ErrorState";
 import { NutriBar } from "@/components/app/NutriBar";
@@ -12,25 +11,20 @@ import { EsqueletoDoDia } from "@/components/ui/Skeleton";
 import { iniciais } from "@/features/perfil/formato";
 import { usePerfil } from "@/features/perfil/hooks";
 import { dataPorExtenso, peso, saudacao } from "@/lib/format";
-import { useDia, useMarcarRefeicao, usePedirPlano } from "../hooks";
-import { planoSemAtivo } from "../regras";
+import { useDia, useMarcandoRefeicao, useMarcarRefeicao, useTentarPlanoDeNovo } from "../hooks";
+import { estadoSemPlano, planoSemAtivo } from "../regras";
 import { AvisoDeAlteracao } from "./AvisoDeAlteracao";
 import { DayRail } from "./DayRail";
 import { NoPlanState } from "./NoPlanState";
 
 /** S11 — o dia de hoje. */
 export function HojeTela() {
-  const router = useRouter();
   const dia = useDia();
   const perfil = usePerfil();
   const marcar = useMarcarRefeicao();
-  const pedir = usePedirPlano();
+  const marcando = useMarcandoRefeicao();
+  const plano = useTentarPlanoDeNovo("/hoje");
   const semPlano = planoSemAtivo(dia.error);
-
-  async function tentarDeNovo() {
-    const id = await pedir.mutateAsync();
-    router.push(`/onboarding/gerando?plano=${id}&voltar=${encodeURIComponent("/hoje")}`);
-  }
 
   if (!dia.data || !perfil.data) {
     return (
@@ -41,10 +35,10 @@ export function HojeTela() {
         <main className="flex-1 px-5">
           {semPlano ? (
             <NoPlanState
-              estado={semPlano.status === "failed" || semPlano.status === null ? "falhou" : "gerando"}
+              estado={estadoSemPlano(semPlano.status)}
               planId={semPlano.planId}
-              tentando={pedir.isPending}
-              aoTentarDeNovo={() => void tentarDeNovo()}
+              tentando={plano.tentando}
+              aoTentarDeNovo={() => void plano.tentar()}
             />
           ) : dia.isError || perfil.isError ? (
             <ErrorState
@@ -90,7 +84,7 @@ export function HojeTela() {
       <AvisoDeAlteracao alteracao={lastChange} />
 
       <main className="flex-1 px-5 pt-3">
-        <DayRail refeicoes={meals} aoAlternar={(slot, done) => marcar.mutate({ slot, done })} />
+        <DayRail refeicoes={meals} ocupado={marcando} aoAlternar={(slot, done) => marcar.mutate({ slot, done })} />
 
         <section className="mt-4 animate-entra" style={{ animationDelay: "420ms" }}>
           <div className="mb-2.5 flex items-baseline justify-between">

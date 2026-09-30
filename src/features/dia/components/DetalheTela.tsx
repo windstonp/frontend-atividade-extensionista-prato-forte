@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { ErrorState } from "@/components/app/ErrorState";
 import { NutriBar } from "@/components/app/NutriBar";
 import { Screen } from "@/components/app/Screen";
 import { TopBar } from "@/components/app/TopBar";
@@ -12,8 +13,8 @@ import { RailSimples } from "@/components/ui/Rail";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { comoApiError } from "@/lib/api/errors";
 import { gramas, porcentagem } from "@/lib/format";
-import { useDia, useMarcarRefeicao, useSubstituicoes, useTrocarItem } from "../hooks";
-import { planoSemAtivo } from "../regras";
+import { useDia, useMarcandoRefeicao, useMarcarRefeicao, useSubstituicoes, useTentarPlanoDeNovo, useTrocarItem } from "../hooks";
+import { estadoSemPlano, planoSemAtivo } from "../regras";
 import type { ItemDoDia } from "../tipos";
 import { AvisoDeAlteracao } from "./AvisoDeAlteracao";
 import { FoodItemRow } from "./FoodItemRow";
@@ -27,6 +28,8 @@ export function DetalheTela({ slot }: { slot: string }) {
   const trocar = useTrocarItem();
   const [alvo, setAlvo] = useState<ItemDoDia | null>(null);
   const opcoes = useSubstituicoes(alvo?.id ?? null);
+  const marcando = useMarcandoRefeicao();
+  const plano = useTentarPlanoDeNovo("/dieta");
   const semPlano = planoSemAtivo(dia.error);
 
   if (semPlano) {
@@ -34,7 +37,27 @@ export function DetalheTela({ slot }: { slot: string }) {
       <Screen>
         <TopBar voltarPara="/dieta" rotuloVoltar="Voltar para a dieta" />
         <main className="flex-1 px-5 pt-3">
-          <NoPlanState estado={semPlano.status === "failed" ? "falhou" : "gerando"} planId={semPlano.planId} aoTentarDeNovo={() => void dia.refetch()} />
+          <NoPlanState
+            estado={estadoSemPlano(semPlano.status)}
+            planId={semPlano.planId}
+            tentando={plano.tentando}
+            aoTentarDeNovo={() => void plano.tentar()}
+          />
+        </main>
+      </Screen>
+    );
+  }
+
+  if (dia.isError && !dia.data) {
+    return (
+      <Screen>
+        <TopBar voltarPara="/dieta" rotuloVoltar="Voltar para a dieta" />
+        <main className="flex-1 px-5 pt-3">
+          <ErrorState
+            titulo="Não foi possível carregar sua refeição"
+            descricao="Seu plano está salvo. Só a conexão falhou agora."
+            aoTentarDeNovo={() => void dia.refetch()}
+          />
         </main>
       </Screen>
     );
@@ -157,7 +180,7 @@ export function DetalheTela({ slot }: { slot: string }) {
             texto={`Não tenho ${proteico.name.toLowerCase()} em casa`}
           />
         ) : null}
-        <Button variante={refeicao.done ? "contorno" : "primaria"} onClick={() => marcar.mutate({ slot: refeicao.slot, done: !refeicao.done })}>
+        <Button variante={refeicao.done ? "contorno" : "primaria"} disabled={marcando} onClick={() => marcar.mutate({ slot: refeicao.slot, done: !refeicao.done })}>
           {refeicao.done ? "Desmarcar refeição" : "Marcar como feita"}
         </Button>
       </footer>

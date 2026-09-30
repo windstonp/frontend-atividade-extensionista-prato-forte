@@ -25,12 +25,12 @@ describe('Detalhe da refeição (S13)', () => {
   it('troca pela folha, mostra o selo e o toast, e desfaz', async () => {
     let trocou: unknown;
     server.use(
-      http.get(url('/days/today/items/5020/substitutions'), () => HttpResponse.json({ data: substituicoesApi })),
-      http.post(url('/days/today/items/5020/swap'), async ({ request }) => {
+      http.get(url('/days/2026-09-28/items/5020/substitutions'), () => HttpResponse.json({ data: substituicoesApi })),
+      http.post(url('/days/2026-09-28/items/5020/swap'), async ({ request }) => {
         trocou = await request.json();
         return HttpResponse.json({ data: diaTrocado() });
       }),
-      http.post(url('/days/today/undo'), () => HttpResponse.json({ data: diaApi() })),
+      http.post(url('/days/2026-09-28/undo'), () => HttpResponse.json({ data: diaApi() })),
     );
     const usuario = userEvent.setup();
 
@@ -53,11 +53,11 @@ describe('Detalhe da refeição (S13)', () => {
   it('409 SUBSTITUTION_NOT_ALLOWED recarrega as opções', async () => {
     let buscas = 0;
     server.use(
-      http.get(url('/days/today/items/5020/substitutions'), () => {
+      http.get(url('/days/2026-09-28/items/5020/substitutions'), () => {
         buscas++;
         return HttpResponse.json({ data: substituicoesApi });
       }),
-      http.post(url('/days/today/items/5020/swap'), () => erroDaApi(409, 'SUBSTITUTION_NOT_ALLOWED', 'Essa troca não está mais disponível.')),
+      http.post(url('/days/2026-09-28/items/5020/swap'), () => erroDaApi(409, 'SUBSTITUTION_NOT_ALLOWED', 'Essa troca não está mais disponível.')),
     );
     const usuario = userEvent.setup();
 
@@ -69,7 +69,7 @@ describe('Detalhe da refeição (S13)', () => {
   });
 
   it('marca como feita e mostra "Desmarcar refeição"', async () => {
-    server.use(http.patch(url('/days/today/meals/almoco'), () => HttpResponse.json({ data: diaApi({ feitas: ['almoco'] }) })));
+    server.use(http.patch(url('/days/2026-09-28/meals/almoco'), () => HttpResponse.json({ data: diaApi({ feitas: ['almoco'] }) })));
 
     renderizar(<DetalheTela slot="almoco" />);
     await userEvent.setup().click(await screen.findByRole('button', { name: 'Marcar como feita' }));

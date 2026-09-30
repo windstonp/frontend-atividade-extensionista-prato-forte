@@ -24,7 +24,7 @@ describe('useMarcarRefeicao (RF13, otimista)', () => {
     let liberar!: () => void;
     const pausa = new Promise<void>((r) => (liberar = r));
     server.use(
-      http.patch(url('/days/today/meals/cafe'), async () => {
+      http.patch(url('/days/2026-09-28/meals/cafe'), async () => {
         await pausa;
         return HttpResponse.json({ data: diaApi({ feitas: ['cafe'] }) });
       }),
@@ -42,7 +42,7 @@ describe('useMarcarRefeicao (RF13, otimista)', () => {
   });
 
   it('volta ao estado anterior e avisa quando a API falha', async () => {
-    server.use(http.patch(url('/days/today/meals/cafe'), () => HttpResponse.error()));
+    server.use(http.patch(url('/days/2026-09-28/meals/cafe'), () => HttpResponse.error()));
     const { wrapper } = comCliente();
     const { result } = renderHook(() => ({ dia: useDia(), marcar: useMarcarRefeicao() }), { wrapper });
     await waitFor(() => expect(result.current.dia.data).toBeDefined());

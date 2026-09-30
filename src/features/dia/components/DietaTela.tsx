@@ -9,8 +9,8 @@ import { MarcaNutri } from "@/components/icons";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { kcal } from "@/lib/format";
 import { useMontado } from "@/lib/motion";
-import { useDia } from "../hooks";
-import { planoSemAtivo, semanaDe } from "../regras";
+import { useDia, useTentarPlanoDeNovo } from "../hooks";
+import { estadoSemPlano, planoSemAtivo, semanaDe } from "../regras";
 import { MealRow } from "./MealRow";
 import { NoPlanState } from "./NoPlanState";
 import { WeekDayPicker } from "./WeekDayPicker";
@@ -62,13 +62,15 @@ export function DietaTela() {
 function Conteudo({ dia }: { dia: ReturnType<typeof useDia> }) {
   const montado = useMontado(160);
   const semPlano = planoSemAtivo(dia.error);
+  const plano = useTentarPlanoDeNovo("/dieta");
 
   if (semPlano) {
     return (
       <NoPlanState
-        estado={semPlano.status === "generating" || semPlano.status === "pending" ? "gerando" : "falhou"}
+        estado={estadoSemPlano(semPlano.status)}
         planId={semPlano.planId}
-        aoTentarDeNovo={() => void dia.refetch()}
+        tentando={plano.tentando}
+        aoTentarDeNovo={() => void plano.tentar()}
       />
     );
   }

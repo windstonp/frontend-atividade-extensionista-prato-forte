@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { IconeCheck, MarcaNutri } from "@/components/icons";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toaster";
+import { comoApiError } from "@/lib/api/errors";
 import { usePedirPlano, usePlano } from "../hooks";
 
 const PASSOS = [
@@ -15,9 +16,12 @@ const PASSOS = [
   "Conferindo suas restrições",
 ];
 
-/** Só caminhos do próprio app: `/perfil` sim, `//site` e `https://…` não. */
+/**
+ * Só caminhos do próprio app: `/perfil` sim; `//site`, `/\\site`, `https://…` e caracteres de controle não
+ * (o navegador trata `\\` como `/` e ignora tabs, virando um endereço externo).
+ */
 export function destinoSeguro(voltar: string | null): string | null {
-  return voltar && voltar.startsWith("/") && !voltar.startsWith("//") ? voltar : null;
+  return voltar && /^\/[A-Za-z0-9\-_/?=&%.]*$/.test(voltar) && !voltar.startsWith("//") ? voltar : null;
 }
 
 /** S09 — acompanha a geração (polling de 1,5 s em `usePlano`). */
@@ -66,7 +70,13 @@ function Acompanhamento({ id, voltar }: { id: number; voltar: string | null }) {
   const concluido = status === "ready" ? PASSOS.length : passo;
 
   async function tentarDeNovo() {
-    const novo = await pedir.mutateAsync();
+    let novo: number;
+    try {
+      novo = await pedir.mutateAsync();
+    } catch (erro) {
+      avisar({ texto: comoApiError(erro).message });
+      return;
+    }
     router.replace(`/onboarding/gerando?plano=${novo}${voltar ? `&voltar=${encodeURIComponent(voltar)}` : ""}`);
   }
 

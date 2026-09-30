@@ -61,3 +61,7 @@ export function planoSemAtivo(erro: unknown): { status: StatusDoPlano | null; pl
     planId: (erro.details.planId as number | null | undefined) ?? null,
   };
 }
+
+/** Sem plano ativo: gerando/na fila → "quase pronto"; falhou ou nunca teve → "Tentar de novo". */
+export const estadoSemPlano = (status: StatusDoPlano | null): 'gerando' | 'falhou' =>
+  status === 'generating' || status === 'pending' ? 'gerando' : 'falhou';
