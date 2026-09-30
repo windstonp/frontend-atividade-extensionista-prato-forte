@@ -1,11 +1,13 @@
 import { CountUp } from "@/components/ui/CountUp";
-import { diaCurto, peso as kg } from "@/lib/format";
+import { diaCurto } from "@/lib/format";
+import { type Medidas, METRICO } from "@/lib/units";
 import { cascata } from "@/lib/motion";
 import { rotulosDeData, textoDaPrevisao, textoDaVariacao } from "../regras";
 import type { PesoDoPeriodo } from "../tipos";
 
 /** Peso no período: número atual, variação, linha com meta tracejada e previsão (RF24, RN35). */
-export function WeightChart({ peso }: { peso: PesoDoPeriodo }) {
+export function WeightChart({ peso, medidas: m = METRICO }: { peso: PesoDoPeriodo; medidas?: Medidas }) {
+  const kg = m.peso;
   const pontos = peso.points;
   const atual = pontos[pontos.length - 1].weightKg;
   const meta = peso.goalKg;
@@ -26,8 +28,8 @@ export function WeightChart({ peso }: { peso: PesoDoPeriodo }) {
     <section className="animate-escala rounded-[20px] bg-white px-[18px] pt-4 pb-3.5" style={{ animationDelay: "120ms" }}>
       <div className="flex items-baseline justify-between gap-3">
         <p className="font-display text-[32px] font-bold tracking-[-0.03em]">
-          <CountUp valor={atual} casas={1} duracao={1100} />{" "}
-          <span className="text-base font-semibold tracking-normal text-fumo">kg</span>
+          <CountUp valor={m.exibir(atual)} casas={1} duracao={1100} />{" "}
+          <span className="text-base font-semibold tracking-normal text-fumo">{m.unidadePeso}</span>
         </p>
         <span
           className={`inline-flex h-[26px] shrink-0 animate-pop items-center rounded-full px-2.5 text-[12.5px] font-semibold ${
@@ -35,7 +37,7 @@ export function WeightChart({ peso }: { peso: PesoDoPeriodo }) {
           }`}
           style={{ animationDelay: "700ms" }}
         >
-          {textoDaVariacao(peso)}
+          {textoDaVariacao(peso, m)}
         </span>
       </div>
 

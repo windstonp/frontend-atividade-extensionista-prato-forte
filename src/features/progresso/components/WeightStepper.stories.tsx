@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
+import { IMPERIAL } from '@/lib/units';
 import { WeightStepper } from './WeightStepper';
 
 const meta = {
@@ -68,5 +69,16 @@ export const EscapeDevolveOFoco: Story = {
     await userEvent.keyboard('{Escape}');
     await expect(tela.getByRole('button', { name: 'Digitar o peso: 58,4 kg' })).toHaveFocus();
     await expect(args.aoMudar).not.toHaveBeenCalled();
+  },
+};
+
+export const Imperial: Story = {
+  args: { medidas: IMPERIAL },
+  play: async ({ canvasElement, args }) => {
+    const tela = within(canvasElement);
+    await expect(tela.getByRole('button', { name: 'Digitar o peso: 128,7 lb' })).toBeInTheDocument();
+    await userEvent.click(tela.getByRole('button', { name: 'Aumentar 0,2 libra' }));
+    await expect(tela.getByRole('button', { name: 'Digitar o peso: 128,9 lb' })).toBeInTheDocument();
+    await expect(args.aoMudar).toHaveBeenLastCalledWith(expect.closeTo(128.9 / 2.20462, 6));
   },
 };

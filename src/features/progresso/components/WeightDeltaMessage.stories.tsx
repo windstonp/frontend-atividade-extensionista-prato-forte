@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { expect, within } from 'storybook/test';
+import { IMPERIAL } from '@/lib/units';
 import { WeightDeltaMessage } from './WeightDeltaMessage';
 
 const meta = {
@@ -25,5 +26,12 @@ export const Igual: Story = {
   args: { diferencaKg: 0 },
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByText('Mesmo peso da semana passada. Uma semana estável é normal.')).toBeInTheDocument();
+  },
+};
+
+export const Imperial: Story = {
+  args: { medidas: IMPERIAL },
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByText('São 0,4 lb a mais que na última pesagem. Dentro do esperado para quem está ganhando massa.')).toBeInTheDocument();
   },
 };

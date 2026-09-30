@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { expect, within } from 'storybook/test';
+import { IMPERIAL } from '@/lib/units';
 import { camelizar } from '@/lib/api/case';
 import { pesagensApi } from '@/mocks/fixtures/progresso';
 import type { Pesagem } from '../tipos';
@@ -29,5 +30,12 @@ export const Vazio: Story = {
   args: { pesagens: [] },
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).queryByRole('list')).toBeNull();
+  },
+};
+
+export const Imperial: Story = {
+  args: { medidas: IMPERIAL },
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getAllByRole('listitem')[0]).toHaveTextContent('15 de setembro128,7 lb+0,9 lb');
   },
 };

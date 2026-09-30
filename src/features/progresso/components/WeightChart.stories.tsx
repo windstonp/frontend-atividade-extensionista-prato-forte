@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { expect, within } from 'storybook/test';
+import { IMPERIAL } from '@/lib/units';
 import { camelizar } from '@/lib/api/case';
 import { progressoApi } from '@/mocks/fixtures/progresso';
 import type { Progresso } from '../tipos';
@@ -53,5 +54,15 @@ export const MuitosPontos: Story = {
   },
   play: async ({ canvasElement }) => {
     await expect(canvasElement.querySelectorAll('[data-rotulo-data]')).toHaveLength(6);
+  },
+};
+
+export const Imperial: Story = {
+  args: { medidas: IMPERIAL },
+  play: async ({ canvasElement }) => {
+    const tela = within(canvasElement);
+    await expect(tela.getByRole('img', { name: 'Peso de 125,2 lb para 128,7 lb, com meta de 136,7 lb' })).toBeInTheDocument();
+    await expect(tela.getByText('+3,5 lb em 5 semanas')).toBeInTheDocument();
+    await expect(tela.getByText('meta 136,7 lb')).toBeInTheDocument();
   },
 };
