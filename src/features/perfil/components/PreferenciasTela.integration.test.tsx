@@ -102,4 +102,18 @@ describe('Preferências e restrições (S18)', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Sem conexão. Confira a internet e tente de novo.');
     expect(roteador.push).not.toHaveBeenCalled();
   });
+  it('restrição nova leva ao Gerando (RN21)', async () => {
+    server.use(
+      http.put(url('/profile/preferences'), () =>
+        HttpResponse.json({ data: perfilApi, meta: { plan_effect: 'regeneration_started', plan_id: 51 } }),
+      ),
+    );
+    const usuario = userEvent.setup();
+
+    renderizar(<PreferenciasTela />);
+    await usuario.click(await screen.findByRole('checkbox', { name: /Frutos do mar/ }));
+    await usuario.click(screen.getByRole('button', { name: 'Salvar alterações' }));
+
+    await waitFor(() => expect(roteador.push).toHaveBeenCalledWith('/onboarding/gerando?plano=51&voltar=%2Fperfil'));
+  });
 });

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { BottomNav } from "@/components/app/BottomNav";
 import { ErrorState } from "@/components/app/ErrorState";
-import { NutriBar } from "@/components/app/NutriBar";
 import { Screen } from "@/components/app/Screen";
 import { IconeAjustes, IconeAvancar } from "@/components/icons";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -16,6 +15,7 @@ import { usePerfil } from "../hooks";
 import type { Perfil } from "../tipos";
 import type { Catalogo } from "@/features/onboarding/tipos";
 import { GoalCard } from "./GoalCard";
+import { RefazerPlano } from "./RefazerPlano";
 
 /** S17 — Perfil vindo de `GET /profile`; os rótulos vêm do catálogo. */
 export function PerfilTela() {
@@ -131,8 +131,7 @@ function Conteudo({ perfil, catalogo }: { perfil: Perfil; catalogo: Catalogo }) 
           ))}
         </nav>
 
-        {/* "Refazer meu plano" de verdade chega com o plano alimentar (Plano 04). */}
-        <NutriBar className="mt-3.5 animate-entra" style={{ animationDelay: "640ms" }} texto="Refazer meu plano com o Nutri" />
+        <RefazerPlano />
       </main>
 
       <div className="h-4 shrink-0" />

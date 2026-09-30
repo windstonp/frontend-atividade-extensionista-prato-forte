@@ -19,8 +19,6 @@ import type {
   WeighIn,
 } from "./types";
 
-const CHAVE = "prato-forte:plano:v1";
-
 interface Alteracao {
   texto: string;
   planoAnterior: DayPlan;
@@ -73,17 +71,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       setAdherence(a);
       setWeighIns(w);
 
-      let planoSalvo: DayPlan | null = null;
-      try {
-        const bruto = window.localStorage.getItem(CHAVE);
-        if (bruto) {
-          const salvo = JSON.parse(bruto) as DayPlan;
-          if (salvo?.date === d.date) planoSalvo = salvo;
-        }
-      } catch {
-        // localStorage bloqueado: seguimos com o plano vindo da API
-      }
-      setPlan(planoSalvo ?? d);
+      setPlan(d); // protótipo só em memória: o dia de verdade vem da API (features/dia)
     } catch {
       setErro("Não foi possível carregar seu plano de hoje.");
     } finally {
@@ -95,14 +83,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     void carregar();
   }, [carregar]);
 
-  const salvar = useCallback((novo: DayPlan) => {
-    setPlan(novo);
-    try {
-      window.localStorage.setItem(CHAVE, JSON.stringify(novo));
-    } catch {
-      // sem persistência é aceitável: o estado vive enquanto a aba estiver aberta
-    }
-  }, []);
+  const salvar = useCallback((novo: DayPlan) => setPlan(novo), []);
 
   const alternarRefeicao = useCallback(
     (mealId: string) => {
@@ -112,9 +93,6 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
           ...atual,
           meals: atual.meals.map((m) => (m.id === mealId ? { ...m, done: !m.done } : m)),
         };
-        try {
-          window.localStorage.setItem(CHAVE, JSON.stringify(novo));
-        } catch {}
         return novo;
       });
     },

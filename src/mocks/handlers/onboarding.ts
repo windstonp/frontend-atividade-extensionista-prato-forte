@@ -13,13 +13,13 @@ export const respondendoOnboarding = (parcial: Parameters<typeof onboardingApi>[
   http.get(url('/onboarding'), () => HttpResponse.json({ data: onboardingApi(parcial) }));
 
 /** `PATCH /profile/steps/{etapa}` que guarda os corpos recebidos (já em snake_case, como no fio). */
-export function gravandoEtapa(etapa: string, meta: { warnings?: string[] } = {}) {
+export function gravandoEtapa(etapa: string, meta: { warnings?: string[]; planEffect?: string; planId?: number | null } = {}) {
   const corpos: unknown[] = [];
   const handler = http.patch(url(`/profile/steps/${etapa}`), async ({ request }) => {
     corpos.push(await request.json());
     return HttpResponse.json({
       data: onboardingApi({ completed_steps: [etapa] }),
-      meta: { plan_effect: 'none', plan_id: null, warnings: meta.warnings ?? [] },
+      meta: { plan_effect: meta.planEffect ?? 'none', plan_id: meta.planId ?? null, warnings: meta.warnings ?? [] },
     });
   });
   return { handler, corpos };

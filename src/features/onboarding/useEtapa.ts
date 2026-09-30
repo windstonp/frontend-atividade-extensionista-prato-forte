@@ -3,10 +3,11 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { useToast } from '@/components/ui/Toaster';
+import { useEfeitoNoPlano } from '@/features/dia/useEfeitoNoPlano';
 import { ApiError, comoApiError, primeirasMensagens } from '@/lib/api/errors';
 import { etapaAnterior, numeroDaEtapa, proximaEtapa, TEXTOS, TOTAL_ETAPAS } from './etapas';
 import { useCatalogo, useDadosOnboarding, useSalvarEtapa } from './hooks';
-import type { EtapaEditavel } from './tipos';
+import type { EtapaEditavel, MetaDaResposta } from './tipos';
 
 export const AVISO_META_AJUSTADA = 'Sua meta de peso foi ajustada para o novo objetivo.';
 export const ERRO_AO_SALVAR = 'Não foi possível salvar. Tente de novo.';
@@ -22,6 +23,7 @@ export function useEtapa(etapa: EtapaEditavel) {
   const catalogo = useCatalogo();
   const dados = useDadosOnboarding();
   const salvarEtapa = useSalvarEtapa(etapa);
+  const aplicarEfeito = useEfeitoNoPlano();
   const [errosCampo, setErrosCampo] = useState<Record<string, string>>({});
   const [erroGeral, setErroGeral] = useState<ApiError | null>(null);
 
@@ -36,9 +38,9 @@ export function useEtapa(etapa: EtapaEditavel) {
     setErrosCampo({});
     setErroGeral(null);
 
-    let avisos: string[];
+    let meta: MetaDaResposta;
     try {
-      avisos = (await salvarEtapa.mutateAsync(corpo)).meta.warnings;
+      meta = (await salvarEtapa.mutateAsync(corpo)).meta;
     } catch (e) {
       const erro = comoApiError(e);
       if (erro.code === 'VALIDATION_ERROR') setErrosCampo(primeirasMensagens(erro.fieldErrors));
@@ -46,14 +48,13 @@ export function useEtapa(etapa: EtapaEditavel) {
       return;
     }
 
-    if (avisos.includes('GOAL_WEIGHT_RESET')) {
-      avisar({
-        texto: AVISO_META_AJUSTADA,
-        acao: editando ? { rotulo: 'Ver meta', onClick: () => router.push('/onboarding/dados?editar=1') } : undefined,
-      });
-    } else if (editando) {
-      avisar({ texto: 'Salvo.' });
+    const metaAjustada = meta.warnings.includes('GOAL_WEIGHT_RESET');
+    if (editando) {
+      // Pelo Perfil: o efeito no plano decide o destino (RN21); o aviso da meta tem prioridade no texto.
+      aplicarEfeito(meta, metaAjustada ? { aviso: AVISO_META_AJUSTADA } : {});
+      return;
     }
+    if (metaAjustada) avisar({ texto: AVISO_META_AJUSTADA });
     router.push(destino);
   }
 

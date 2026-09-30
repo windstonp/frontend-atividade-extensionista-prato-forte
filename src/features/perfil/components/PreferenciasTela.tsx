@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ErrorState } from "@/components/app/ErrorState";
 import { Screen } from "@/components/app/Screen";
@@ -12,7 +11,7 @@ import { Field } from "@/components/ui/Field";
 import { FormError } from "@/components/ui/FormError";
 import { EtiquetaAlergia, OptionRow } from "@/components/ui/OptionRow";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { useToast } from "@/components/ui/Toaster";
+import { useEfeitoNoPlano } from "@/features/dia/useEfeitoNoPlano";
 import { useCatalogo } from "@/features/onboarding/hooks";
 import { MENSAGENS } from "@/features/onboarding/regras";
 import type { Catalogo } from "@/features/onboarding/tipos";
@@ -56,8 +55,7 @@ const iguais = (a: (string | number)[], b: (string | number)[]) =>
   a.length === b.length && [...a].sort().join("|") === [...b].sort().join("|");
 
 function FormPreferencias({ perfil, catalogo }: { perfil: Perfil; catalogo: Catalogo }) {
-  const router = useRouter();
-  const avisar = useToast();
+  const aplicarEfeito = useEfeitoNoPlano();
   const salvar = useSalvarPreferencias();
   const [inicial] = useState<EntradaPreferencias>(() => ({
     restrictions: perfil.restrictions.map((r) => r.slug),
@@ -117,8 +115,9 @@ function FormPreferencias({ perfil, catalogo }: { perfil: Perfil; catalogo: Cata
       setErroNovo(problema);
       if (problema) return;
     }
+    let resposta: Awaited<ReturnType<typeof salvar.mutateAsync>>;
     try {
-      await salvar.mutateAsync({
+      resposta = await salvar.mutateAsync({
         restrictions: catalogo.restrictions.map((r) => r.slug).filter((s) => escolhas.restrictions.includes(s)),
         otherRestrictions: pendente ? [...escolhas.otherRestrictions, pendente] : escolhas.otherRestrictions,
         pantryItems: catalogo.pantry.flatMap((g) => g.items.map((i) => i.slug)).filter((s) => escolhas.pantryItems.includes(s)),
@@ -128,9 +127,7 @@ function FormPreferencias({ perfil, catalogo }: { perfil: Perfil; catalogo: Cata
       setErro(comoApiError(e));
       return;
     }
-    // Com o plano alimentar (Plano 04), restrição nova refaz o plano (RN21); até lá, só salva.
-    avisar({ texto: "Salvo." });
-    router.push("/perfil");
+    aplicarEfeito(resposta.meta); // RN21: restrição nova refaz o plano; cozinha/"não curto" sugere refazer
   }
 
   return (
