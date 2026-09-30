@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { IMPERIAL } from '@/lib/units';
 import {
   ajustarPeso,
   diasEntre,
@@ -43,6 +44,10 @@ describe('mensagemDaDiferenca (tabela do §4 S16)', () => {
     expect(mensagemDaDiferenca(objetivo, diferenca, 7)).toBe(texto);
   });
 
+  it('imperial: diferença em lb', () => {
+    expect(mensagemDaDiferenca('ganhar-massa', 0.2, 7, IMPERIAL)).toBe('São 0,4 lb a mais que na última pesagem. Dentro do esperado para quem está ganhando massa.');
+  });
+
   it('igual: "semana passada" com 5+ dias, "última pesagem" antes disso', () => {
     expect(mensagemDaDiferenca('ganhar-massa', 0, 7)).toBe('Mesmo peso da semana passada. Uma semana estável é normal.');
     expect(mensagemDaDiferenca('perder-gordura', 0.04, 2)).toBe('Mesmo peso da última pesagem.');
@@ -51,10 +56,17 @@ describe('mensagemDaDiferenca (tabela do §4 S16)', () => {
 
 describe('peso no stepper', () => {
   it('ajusta de 100 em 100 g, sem passar de 30–250', () => {
-    expect(ajustarPeso(58.4, 0.1)).toBe(58.5);
-    expect(ajustarPeso(58.4, -0.1)).toBe(58.3);
-    expect(ajustarPeso(30, -0.1)).toBe(30);
-    expect(ajustarPeso(250, 0.1)).toBe(250);
+    expect(ajustarPeso(58.4, 1)).toBe(58.5);
+    expect(ajustarPeso(58.4, -1)).toBe(58.3);
+    expect(ajustarPeso(30, -1)).toBe(30);
+    expect(ajustarPeso(250, 1)).toBe(250);
+  });
+
+  it('imperial: passo de 0,2 lb sobre o número exibido', () => {
+    expect(IMPERIAL.exibir(ajustarPeso(58.4, 1, IMPERIAL))).toBe(128.9);
+    expect(IMPERIAL.exibir(ajustarPeso(ajustarPeso(58.4, 1, IMPERIAL), 1, IMPERIAL))).toBe(129.1);
+    expect(lerPesoDigitado('128,7', 60, IMPERIAL)).toBeCloseTo(128.7 / 2.20462, 6);
+    expect(lerPesoDigitado('20', 60, IMPERIAL)).toBe(30);
   });
 
   it.each([
@@ -71,6 +83,8 @@ describe('peso no stepper', () => {
     expect(posicaoNaRegua(58.9, 58.4)).toBe(75);
     expect(posicaoNaRegua(62, 58.4)).toBe(96);
     expect(posicaoNaRegua(50, 58.4)).toBe(4);
+    expect(posicaoNaRegua(130, 128, 2)).toBe(96);
+    expect(posicaoNaRegua(129, 128, 2)).toBe(75);
   });
 });
 
@@ -86,6 +100,7 @@ describe('textos da Evolução', () => {
 
   it('variação usa as semanas reais da API', () => {
     expect(textoDaVariacao(peso())).toBe('+1,6 kg em 5 semanas');
+    expect(textoDaVariacao(peso(), IMPERIAL)).toBe('+3,5 lb em 5 semanas');
     expect(textoDaVariacao(peso({ changeKg: -0.8, spanWeeks: 1 }))).toBe('−0,8 kg em 1 semana');
     expect(textoDaVariacao(peso({ changeKg: 0, spanWeeks: 0, points: [{ date: '2026-09-28', weightKg: 58.4 }] }))).toBe('primeira pesagem');
     expect(textoDaVariacao(peso({ changeKg: 0.3, spanWeeks: 0 }))).toBe('+0,3 kg nesta semana');
