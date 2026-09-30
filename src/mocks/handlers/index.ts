@@ -5,6 +5,7 @@ import { handlersDia } from './dia';
 import { handlersNutri } from './nutri';
 import { handlersOnboarding } from './onboarding';
 import { handlersProgresso } from './progresso';
+import { handlersValidacao } from './validacao';
 
 /** Handlers padrão de todas as integrações. Cada teste troca o que precisar com `server.use()`. */
-export const handlers: RequestHandler[] = [...handlersAuth, ...handlersOnboarding, ...handlersDia, ...handlersNutri, ...handlersProgresso, ...handlersConfiguracoes];
+export const handlers: RequestHandler[] = [...handlersAuth, ...handlersOnboarding, ...handlersDia, ...handlersNutri, ...handlersProgresso, ...handlersConfiguracoes, ...handlersValidacao];

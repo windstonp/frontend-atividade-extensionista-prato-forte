@@ -1,3 +1,4 @@
+import type { Avaliacao } from '@/features/validacao/tipos';
 import type { Macros } from '@/lib/types';
 
 export type Slot = 'cafe' | 'lanche' | 'almoco' | 'pre-treino' | 'jantar';
@@ -87,4 +88,5 @@ export interface Plano {
   readyAt?: string;
   targets?: { kcal: number; proteinG: number; carbsG: number; fatG: number };
   meals?: RefeicaoDoPlano[];
+  rating?: Avaliacao | null;
 }

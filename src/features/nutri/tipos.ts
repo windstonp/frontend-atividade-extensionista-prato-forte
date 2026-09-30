@@ -1,3 +1,4 @@
+import type { Avaliacao } from '@/features/validacao/tipos';
 import type { Macros } from '@/lib/types';
 import type { Slot } from '@/features/dia/tipos';
 
@@ -55,7 +56,7 @@ export interface MensagemNutri {
   card: CartaoTroca | CartaoRefeicao | null;
   actions: AcaoNutri[];
   actionsAvailable: boolean;
-  rating: null;
+  rating: Avaliacao | null;
 }
 
 export type Mensagem = MensagemUsuario | MensagemNutri;
