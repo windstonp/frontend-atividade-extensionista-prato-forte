@@ -44,8 +44,9 @@ export function EtapaResumo() {
 
   async function gerar() {
     setErro(null);
+    let plano: number;
     try {
-      await concluir.mutateAsync();
+      plano = (await concluir.mutateAsync()).plan.id;
     } catch (e) {
       const falha = comoApiError(e);
       const etapa = falha.details.step;
@@ -58,7 +59,7 @@ export function EtapaResumo() {
       return;
     }
     // Recarga: o `['me']` em cache ainda diz "onboarding incompleto" e o guarda voltaria para cá.
-    recarregarEm("/onboarding/gerando");
+    recarregarEm(`/onboarding/gerando?plano=${plano}`);
   }
 
   return (

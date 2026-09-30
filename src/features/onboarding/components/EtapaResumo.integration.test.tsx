@@ -54,7 +54,7 @@ describe('Resumo (S08)', () => {
     server.use(
       http.post(url('/onboarding/complete'), () => {
         concluiu = true;
-        return HttpResponse.json({ data: { plan: null } }, { status: 202 });
+        return HttpResponse.json({ data: { plan: { id: 42, status: 'pending' } } }, { status: 202 });
       }),
     );
 
@@ -62,7 +62,7 @@ describe('Resumo (S08)', () => {
     await screen.findByText('Amendoim e castanhas, camarão'); // antes disso o botão é o do esqueleto
     await userEvent.setup().click(screen.getByRole('button', { name: 'Gerar meu plano' }));
 
-    await waitFor(() => expect(recarregarEm).toHaveBeenCalledWith('/onboarding/gerando'));
+    await waitFor(() => expect(recarregarEm).toHaveBeenCalledWith('/onboarding/gerando?plano=42'));
     expect(concluiu).toBe(true);
   });
 
