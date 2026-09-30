@@ -6,7 +6,8 @@ import { conversaApi } from '@/mocks/fixtures/nutri';
 import { url } from '@/mocks/handlers/auth';
 import { server } from '@/mocks/server';
 import { definirUrl, redefinirNavegacao, roteador } from '@/test/next-navigation';
-import { renderizar } from '@/test/renderizar';
+import { CHAVES } from '@/lib/chaves';
+import { novoClienteDeTeste, renderizar } from '@/test/renderizar';
 import { ConversasTela } from './ConversasTela';
 
 vi.mock('next/navigation', () => import('@/test/next-navigation'));
@@ -38,6 +39,26 @@ describe('Conversas (N05)', () => {
     expect(await screen.findByRole('heading', { name: 'Conversas com o Nutri' })).toBeInTheDocument();
     expect(screen.getByText('Sua pergunta: “E no jantar?”. Escolha onde perguntar.')).toBeInTheDocument();
     expect(await screen.findByRole('link', { name: /Conversa 3/ })).toHaveAttribute('href', `/nutri/3?pergunta=${encodeURIComponent('E no jantar?')}`);
+  });
+
+  it('lista vazia guardada no cache não pula para uma conversa nova antes de conferir no servidor', async () => {
+    comConversas(3);
+    let criou = false;
+    server.use(
+      http.post(url('/conversations'), () => {
+        criou = true;
+        return HttpResponse.json({ data: conversaApi(9, { vazia: true }) }, { status: 201 });
+      }),
+    );
+    const cliente = novoClienteDeTeste();
+    cliente.setQueryData(CHAVES.conversas, { pages: [{ data: [], meta: { nextCursor: null, perPage: 15 } }], pageParams: [null] });
+    await cliente.invalidateQueries({ queryKey: CHAVES.conversas });
+
+    renderizar(<ConversasTela />, cliente);
+
+    expect(await screen.findByRole('link', { name: /Conversa 3/ })).toBeInTheDocument();
+    expect(roteador.replace).not.toHaveBeenCalled();
+    expect(criou).toBe(false);
   });
 
   it('"Nova conversa" cria e abre', async () => {

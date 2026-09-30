@@ -38,8 +38,9 @@ export function ConversasTela() {
     }
   }
 
-  // Sem conversas anteriores: pula a lista (RF19).
-  const semNenhuma = conversas.isSuccess && lista.length === 0;
+  // Sem conversas anteriores: pula a lista (RF19). Só com a resposta do servidor em mãos:
+  // a lista vazia guardada da primeira visita não conta.
+  const semNenhuma = conversas.isSuccess && !conversas.isFetching && lista.length === 0;
   useEffect(() => {
     if (semNenhuma && nova.isIdle) void comecar(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -85,7 +86,7 @@ export function ConversasTela() {
               aoTentarDeNovo={() => void conversas.refetch()}
             />
           </div>
-        ) : !conversas.data || semNenhuma ? (
+        ) : !conversas.data || lista.length === 0 ? (
           <div className="mt-6 flex flex-col gap-3" role="status" aria-label="Carregando conversas">
             <Skeleton className="h-[74px] rounded-2xl" />
             <Skeleton className="h-[74px] rounded-2xl" />
