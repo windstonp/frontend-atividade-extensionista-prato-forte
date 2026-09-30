@@ -12,4 +12,7 @@ export const CHAVES = {
   mensagens: (id: number) => ['mensagens', id] as const,
   contextoNutri: ['nutri', 'contexto'],
   sugestoesNutri: ['nutri', 'sugestoes'],
+  progressos: ['progresso'],
+  progresso: (periodo: string) => ['progresso', periodo] as const,
+  pesagens: ['pesagens'],
 } as const;
