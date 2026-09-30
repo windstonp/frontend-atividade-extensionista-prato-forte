@@ -19,3 +19,7 @@ if (typeof window !== 'undefined' && !window.matchMedia) {
       dispatchEvent: () => false,
     }) as MediaQueryList;
 }
+
+// No Next, a versão entra pelo next.config; nos testes, direto do package.json.
+import pacote from './package.json';
+process.env.NEXT_PUBLIC_APP_VERSION ??= pacote.version;

@@ -21,6 +21,8 @@ export const metadata: Metadata = {
   title: "Prato Forte",
   description:
     "Guia nutricional para quem treina na Zfit: cardápio montado com a comida que você já come.",
+  icons: { apple: "/apple-touch-icon.png" },
+  appleWebApp: { capable: true, title: "Prato Forte", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {

@@ -7,7 +7,7 @@ export const TERMO_VERSAO = '2026-10';
  * trocou o texto de forma relevante? suba TERMO_VERSAO aqui e no backend.
  */
 export const TERMO_PARAGRAFOS = [
-  'O Prato Forte guarda seu peso, altura, idade, objetivo, restrições e alergias para montar e ajustar seu plano alimentar. São dados de saúde, e a LGPD pede o seu consentimento para usá-los.',
+  'O Prato Forte guarda seu peso, altura, idade, objetivo, restrições e alergias para montar e ajustar seu plano alimentar. São dados de saúde, e a LGPD pede o seu consentimento para usá-los. O Prato Forte não substitui o acompanhamento de um(a) nutricionista.',
   'Ninguém da academia vê seus dados. Na pesquisa do projeto de extensão da UNINTER, usamos só números agregados e anônimos, sem nome nem e-mail.',
   'Se você avaliar uma resposta ou o app e escrever um comentário, ele entra na pesquisa como você escreveu, sem o seu nome.',
   'Para montar o cardápio, uma inteligência artificial recebe seus números e a lista de alimentos, sem o seu nome completo nem o seu e-mail. No chat, o Nutri recebe o nome como você prefere ser chamado.',

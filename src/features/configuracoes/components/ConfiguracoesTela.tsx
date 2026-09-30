@@ -124,6 +124,7 @@ export function ConfiguracoesTela() {
             O Prato Forte é um projeto de extensão do curso de Ciência da Computação da UNINTER, feito junto com a academia{" "}
             {perfil.data?.gym ?? "Zfit"}, em {perfil.data?.city ?? "Capivari de Baixo"}.
           </p>
+          <p className="mt-2 text-[12.5px] text-fumo">O Prato Forte não substitui o acompanhamento de um(a) nutricionista.</p>
           {versao ? <p className="mt-2 text-[12.5px] text-musgo">Versão {versao}</p> : null}
         </div>
       </main>

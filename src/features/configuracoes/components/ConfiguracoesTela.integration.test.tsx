@@ -157,4 +157,11 @@ describe('Configurações (S19)', () => {
 
     expect(await screen.findByText('Não foi possível carregar suas configurações')).toBeInTheDocument();
   });
+
+  it('rodapé: não substitui nutricionista e mostra a versão do app', async () => {
+    renderizar(<ConfiguracoesTela />);
+
+    expect(await screen.findByText('O Prato Forte não substitui o acompanhamento de um(a) nutricionista.')).toBeInTheDocument();
+    expect(screen.getByText(/^Versão \d+\.\d+\.\d+$/)).toBeInTheDocument();
+  });
 });
