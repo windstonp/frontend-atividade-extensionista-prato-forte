@@ -16,6 +16,8 @@ import type { Perfil } from "../tipos";
 import type { Catalogo } from "@/features/onboarding/tipos";
 import { GoalCard } from "./GoalCard";
 import { RefazerPlano } from "./RefazerPlano";
+import { useConfiguracoes } from "@/features/configuracoes/hooks";
+import { resumoDosAvisos } from "@/features/configuracoes/regras";
 
 /** S17 — Perfil vindo de `GET /profile`; os rótulos vêm do catálogo. */
 export function PerfilTela() {
@@ -57,6 +59,7 @@ export function PerfilTela() {
 }
 
 function Conteudo({ perfil, catalogo }: { perfil: Perfil; catalogo: Catalogo }) {
+  const configuracoes = useConfiguracoes();
   const rotuloObjetivo = catalogo.goals.find((g) => g.value === perfil.goal)?.label ?? "";
   const rotuloAtividade = catalogo.activityLevels.find((a) => a.value === perfil.activityLevel)?.label ?? "";
   const alergia = perfil.restrictions.find((r) => r.isAllergy);
@@ -69,8 +72,11 @@ function Conteudo({ perfil, catalogo }: { perfil: Perfil; catalogo: Catalogo }) 
     { href: "/perfil/preferencias", titulo: "Preferências alimentares", valor: `${cozinha} ${cozinha === 1 ? "alimento" : "alimentos"} na sua cozinha` },
     { href: "/perfil/preferencias", titulo: "Restrições e alergias", valor: restricao, alerta: Boolean(alergia) },
     { href: "/onboarding/rotina?editar=1", titulo: "Rotina e horários", valor: `Treino às ${perfil.trainingTime}, ${dias}` },
-    // Resumo das notificações ligadas: Plano 07 (GET /settings).
-    { href: "/perfil/configuracoes", titulo: "Notificações e conta", valor: "Avisos, medidas e conta" },
+    {
+      href: "/perfil/configuracoes",
+      titulo: "Notificações e conta",
+      valor: configuracoes.data ? resumoDosAvisos(configuracoes.data.notifications) : "Avisos, medidas e conta",
+    },
   ];
 
   return (

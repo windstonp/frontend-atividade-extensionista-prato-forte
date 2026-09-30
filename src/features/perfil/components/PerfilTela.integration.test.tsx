@@ -72,4 +72,10 @@ describe('Perfil (S17)', () => {
 
     expect(await screen.findByRole('heading', { name: 'Camila Réus' })).toBeInTheDocument();
   });
+
+  it('"Notificações e conta" mostra o resumo real dos avisos', async () => {
+    renderizar(<PerfilTela />);
+
+    expect(await screen.findByRole('link', { name: /Notificações e conta[\s\S]*2 avisos ligados/ })).toHaveAttribute('href', '/perfil/configuracoes');
+  });
 });

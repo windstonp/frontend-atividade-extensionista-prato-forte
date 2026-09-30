@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { recarregarEm } from '@/lib/navegar';
+import { cancelarInscricao } from '@/lib/push';
 import { usuarioApi } from '@/mocks/fixtures/usuario';
 import { erroDaApi, url } from '@/mocks/handlers/auth';
 import { server } from '@/mocks/server';
@@ -12,6 +13,7 @@ import { ContaSection } from './ContaSection';
 
 vi.mock('next/navigation', () => import('@/test/next-navigation'));
 vi.mock('@/lib/navegar', () => ({ recarregarEm: vi.fn() }));
+vi.mock('@/lib/push', () => ({ cancelarInscricao: vi.fn(async () => null) }));
 
 beforeEach(() => {
   redefinirNavegacao();
@@ -88,5 +90,43 @@ describe('Sua conta', () => {
 
     expect(await within(folha).findByText('A senha não confere.')).toBeInTheDocument();
     expect(recarregarEm).not.toHaveBeenCalled();
+  });
+
+  it('sair tira a inscrição deste navegador antes do logout (CA07)', async () => {
+    vi.mocked(cancelarInscricao).mockResolvedValueOnce('https://fcm.googleapis.com/fcm/send/abc');
+    const ordem: string[] = [];
+    server.use(
+      http.delete(url('/push-subscriptions'), async ({ request }) => {
+        ordem.push(`delete ${((await request.json()) as { endpoint: string }).endpoint}`);
+        return new HttpResponse(null, { status: 204 });
+      }),
+      http.post(url('/logout'), () => {
+        ordem.push('logout');
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+
+    renderizar(<ContaSection />);
+    await userEvent.setup().click(await screen.findByRole('button', { name: /Sair desta conta/ }));
+
+    await waitFor(() => expect(recarregarEm).toHaveBeenCalledWith('/'));
+    expect(ordem).toEqual(['delete https://fcm.googleapis.com/fcm/send/abc', 'logout']);
+  });
+
+  it('se tirar a inscrição falhar (offline), sai mesmo assim', async () => {
+    vi.mocked(cancelarInscricao).mockRejectedValueOnce(new Error('offline'));
+    let saiu = false;
+    server.use(
+      http.post(url('/logout'), () => {
+        saiu = true;
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+
+    renderizar(<ContaSection />);
+    await userEvent.setup().click(await screen.findByRole('button', { name: /Sair desta conta/ }));
+
+    await waitFor(() => expect(recarregarEm).toHaveBeenCalledWith('/'));
+    expect(saiu).toBe(true);
   });
 });
