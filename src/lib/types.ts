@@ -47,19 +47,6 @@ export interface Profile {
   restrictions: Restriction[];
 }
 
-export interface WeighIn {
-  /** ISO, só a data */
-  date: string;
-  weightKg: number;
-}
-
-export type AdherenceStatus = "completo" | "parcial" | "vazio" | "hoje";
-
-export interface DayAdherence {
-  date: string;
-  status: AdherenceStatus;
-}
-
 /** Etapas do onboarding, na ordem do fluxo (espelha `App\Enums\OnboardingStep`). */
 export type EtapaOnboarding =
   | "objetivo"

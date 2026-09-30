@@ -1,4 +1,4 @@
-import type { DayAdherence, Profile, WeighIn } from "@/lib/types";
+import type { Profile } from "@/lib/types";
 
 /**
  * Dados fictícios de uma aluna da Zfit. Servem para validar a experiência
@@ -44,25 +44,3 @@ export const mockProfile: Profile = {
     { id: "castanhas", label: "Amendoim e castanhas", allergy: true },
   ],
 };
-
-export const mockWeighIns: WeighIn[] = [
-  { date: "2026-08-11", weightKg: 56.8 },
-  { date: "2026-08-18", weightKg: 57.0 },
-  { date: "2026-08-25", weightKg: 57.5 },
-  { date: "2026-09-01", weightKg: 57.6 },
-  { date: "2026-09-08", weightKg: 58.0 },
-  { date: "2026-09-15", weightKg: 58.4 },
-];
-
-const padrao: DayAdherence["status"][] = [
-  "completo", "completo", "parcial", "completo", "completo", "vazio", "completo",
-  "completo", "parcial", "completo", "completo", "completo", "completo", "vazio",
-  "completo", "completo", "completo", "parcial", "completo", "completo", "completo",
-  "completo", "completo", "vazio", "completo", "completo", "completo", "hoje",
-];
-
-export const mockAdherence: DayAdherence[] = padrao.map((status, i) => {
-  const d = new Date("2026-08-25T12:00:00Z");
-  d.setUTCDate(d.getUTCDate() + i);
-  return { date: d.toISOString().slice(0, 10), status };
-});
