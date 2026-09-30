@@ -12,9 +12,11 @@ docker compose run --rm web npm run storybook  # http://localhost:6006
 
 E2E (precisa do backend no ar e semeado):
 ```bash
-(cd ../backend && docker compose up -d && docker compose exec api php artisan migrate:fresh --seeder=E2ESeeder --force)
+(cd ../backend && AI_FAKE_FAIL_PLAN_FOR=falha-chromium@e2e.pratoforte.test,falha-webkit@e2e.pratoforte.test docker compose up -d && docker compose exec api php artisan migrate:fresh --seeder=E2ESeeder --force)
 docker compose run --rm web npm run e2e
 ```
+
+O `docker compose up` do backend sobe a fila (`queue`), que gera os planos. `AI_FAKE_FAIL_PLAN_FOR` faz a primeira geração das contas `falha-*` falhar (E2E-07). Os testes mudam o estado das contas: semeie de novo antes de cada rodada.
 
 
 Guia nutricional para quem treina na academia Zfit, em Capivari de Baixo.

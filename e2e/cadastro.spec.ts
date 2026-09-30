@@ -50,5 +50,12 @@ test('das Boas-vindas ao plano sendo gerado (CA01, E2E-01 até "Gerando")', asyn
   await expect(page.getByText('Amendoim e castanhas', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Gerar meu plano' }).click();
 
-  await expect(page).toHaveURL(/\/onboarding\/gerando$/);
+  await expect(page).toHaveURL(/\/onboarding\/gerando\?plano=\d+$/);
+  await expect(page.getByRole('heading', { name: /Seu plano está pronto/ })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText('Um dia comum')).toBeVisible();
+  await page.getByRole('link', { name: 'Ver o dia de hoje' }).click();
+
+  await expect(page).toHaveURL(/\/hoje$/);
+  await expect(page.getByText('0 de 5 refeições')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Metas de hoje' })).toBeVisible();
 });

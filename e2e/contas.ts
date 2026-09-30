@@ -36,3 +36,6 @@ export async function linkDeRedefinicao(request: APIRequestContext, email: strin
     .not.toBe('');
   return link;
 }
+
+/** Contas do 04B, uma por navegador: `dia`, `alergia`, `mudanca`, `falha`. */
+export const conta = (tipo: 'dia' | 'alergia' | 'mudanca' | 'falha', navegador: string) => `${tipo}-${navegador}@e2e.pratoforte.test`;

@@ -47,6 +47,7 @@ jobs:
       DB_USERNAME: prato
       DB_PASSWORD: prato
       MAIL_HOST: 127.0.0.1
+      AI_FAKE_FAIL_PLAN_FOR: falha-chromium@e2e.pratoforte.test,falha-webkit@e2e.pratoforte.test
     steps:
       - uses: actions/checkout@v4
         with:
@@ -70,6 +71,7 @@ jobs:
           php artisan key:generate
           php artisan migrate:fresh --seeder=E2ESeeder --force
           php artisan serve --host=0.0.0.0 --port=8000 > /tmp/api.log 2>&1 &
+          php artisan queue:work --tries=1 --timeout=170 --sleep=1 > /tmp/queue.log 2>&1 &
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -88,4 +90,6 @@ jobs:
           path: |
             frontend/test-results
             frontend/playwright-report
+            /tmp/api.log
+            /tmp/queue.log
             /tmp/api.log
