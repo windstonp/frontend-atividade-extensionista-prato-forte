@@ -1,4 +1,5 @@
 import { screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { planoProntoApi } from '@/mocks/fixtures/dia';
@@ -34,5 +35,20 @@ describe('Pronto (S10)', () => {
     renderizar(<ProntoTela />);
 
     await vi.waitFor(() => expect(roteador.replace).toHaveBeenCalledWith('/onboarding/gerando?plano=42'));
+  });
+
+  it('pergunta se o plano faz sentido e avalia o plano', async () => {
+    definirUrl('/onboarding/pronto?plano=42');
+    let corpo: unknown;
+    server.use(
+      http.get(url('/plans/42'), () => HttpResponse.json({ data: planoProntoApi(42) })),
+      http.put(url('/ratings'), async ({ request }) => ((corpo = await request.json()), HttpResponse.json({ data: {} }))),
+    );
+
+    renderizar(<ProntoTela />);
+    expect(await screen.findByText('Esse plano faz sentido para você?')).toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole('button', { name: 'O plano faz sentido' }));
+
+    await vi.waitFor(() => expect(corpo).toEqual({ rateable_type: 'meal_plan', rateable_id: 42, value: 'up', comment: null }));
   });
 });

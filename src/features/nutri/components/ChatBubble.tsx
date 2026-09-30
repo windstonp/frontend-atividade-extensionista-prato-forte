@@ -46,10 +46,13 @@ export function RespostaBubble({
   mensagem,
   aplicando = false,
   aoAgir,
+  rodape,
 }: {
   mensagem: MensagemNutri;
   aplicando?: boolean;
   aoAgir: (acao: AcaoNutri) => void;
+  /** O que vem abaixo das ações (a avaliação 👍/👎, no chat). */
+  rodape?: React.ReactNode;
 }) {
   // Confirmação de algo aplicado: a resposta aponta para a refeição que mudou.
   const confirmou = mensagem.actions.some((a) => a.kind === "ver-refeicao");
@@ -76,6 +79,7 @@ export function RespostaBubble({
           </p>
         ) : null}
         <NutriActions acoes={mensagem.actionsAvailable ? mensagem.actions : []} aplicando={aplicando} aoAgir={aoAgir} />
+        {rodape}
       </div>
     </div>
   );

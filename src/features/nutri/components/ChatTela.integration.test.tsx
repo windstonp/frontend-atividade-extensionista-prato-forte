@@ -294,4 +294,27 @@ describe('Chat do Nutri (S14)', () => {
     expect(screen.getByRole('main')).not.toHaveAttribute('aria-live');
     expect(await screen.findByText(/^O Nutri respondeu: Pode\. No seu almoço/)).toHaveAttribute('aria-live', 'polite');
   });
+
+  it('avaliar a resposta: 👍 marca e vai para a API (CA01)', async () => {
+    let corpo: unknown;
+    server.use(
+      conversa(5),
+      respondendoMensagens(5, [{ ...respostaTrocaApi(12, { acoes: false }), rating: null }, mensagemUsuarioApi(11)]),
+      http.put(url('/ratings'), async ({ request }) => ((corpo = await request.json()), HttpResponse.json({ data: {} }))),
+    );
+
+    renderizar(<ChatTela id={5} />);
+    await userEvent.setup().click(await screen.findByRole('button', { name: 'Resposta útil' }));
+
+    await waitFor(() => expect(corpo).toEqual({ rateable_type: 'nutri_message', rateable_id: 12, value: 'up', comment: null }));
+    expect(screen.getByRole('button', { name: 'Resposta útil' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('avaliação salva volta marcada ao abrir a conversa', async () => {
+    server.use(conversa(5), respondendoMensagens(5, [{ ...respostaTrocaApi(12, { acoes: false }), rating: { value: 'down', comment: 'x' } }, mensagemUsuarioApi(11)]));
+
+    renderizar(<ChatTela id={5} />);
+
+    expect(await screen.findByRole('button', { name: 'Resposta não ajudou' })).toHaveAttribute('aria-pressed', 'true');
+  });
 });

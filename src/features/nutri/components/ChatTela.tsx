@@ -14,6 +14,7 @@ import { useDia } from "@/features/dia/hooks";
 import { usePerfil } from "@/features/perfil/hooks";
 import { comoApiError } from "@/lib/api/errors";
 import { cascata } from "@/lib/motion";
+import { Avaliacao } from "@/features/validacao/components/Avaliacao";
 import { useContexto, useConversa, useMensagens, usePerguntar, useResolverAcao, useSugestoes } from "../hooks";
 import { juntarPaginas, perguntaDaAcao, perguntaDaUrl, ultimasSugestoes } from "../regras";
 import type { AcaoNutri, MensagemNutri, Pendente } from "../tipos";
@@ -207,7 +208,13 @@ export function ChatTela({ id }: { id: number }) {
               m.role === "user" ? (
                 <PerguntaBubble key={m.id} texto={m.content} />
               ) : (
-                <RespostaBubble key={m.id} mensagem={m} aplicando={aplicando === m.id} aoAgir={(a) => agir(a, m)} />
+                <RespostaBubble
+                  key={m.id}
+                  mensagem={m}
+                  aplicando={aplicando === m.id}
+                  aoAgir={(a) => agir(a, m)}
+                  rodape={<Avaliacao alvo={{ tipo: "nutri_message", id: m.id }} inicial={m.rating} variante="resposta" />}
+                />
               ),
             )}
             {pendente ? (

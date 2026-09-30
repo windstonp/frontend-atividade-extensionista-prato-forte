@@ -1,5 +1,6 @@
 "use client";
 
+import { Avaliacao } from "@/features/validacao/components/Avaliacao";
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ErrorState } from "@/components/app/ErrorState";
@@ -104,6 +105,11 @@ export function ProntoTela() {
             </span>
           </div>
         </section>
+
+        <div className="mt-5 animate-entra" style={{ animationDelay: "900ms" }}>
+          <p className="text-[14px] font-semibold">Esse plano faz sentido para você?</p>
+          <Avaliacao alvo={{ tipo: "meal_plan", id: plano.data.id }} inicial={plano.data.rating ?? null} variante="plano" />
+        </div>
 
         <p className="mt-4 animate-entra text-[13.5px] leading-normal text-fumo" style={{ animationDelay: "920ms" }}>
           Faltou algum alimento ou o horário não bate? O Nutri ajusta qualquer refeição em segundos.
