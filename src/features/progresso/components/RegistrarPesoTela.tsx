@@ -10,6 +10,7 @@ import { useToast } from "@/components/ui/Toaster";
 import { usePerfil } from "@/features/perfil/hooks";
 import { comoApiError } from "@/lib/api/errors";
 import { dataPorExtenso } from "@/lib/format";
+import { useMedidas } from "@/lib/useMedidas";
 import { usePesagens, useRegistrarPeso } from "../hooks";
 import { diasEntre, hojeLocal } from "../regras";
 import { HistoricoPesagens } from "./HistoricoPesagens";
@@ -21,6 +22,7 @@ export function RegistrarPesoTela() {
   const router = useRouter();
   const avisar = useToast();
   const perfil = usePerfil();
+  const m = useMedidas();
   const pesagens = usePesagens();
   const registrar = useRegistrarPeso();
   const [escolhido, setEscolhido] = useState<number | null>(null);
@@ -46,7 +48,7 @@ export function RegistrarPesoTela() {
   const anterior = jaPesouHoje ? lista[lista.length - 2] : ultima;
 
   function salvar() {
-    registrar.mutate(valor, {
+    registrar.mutate(m.paraApi(valor), {
       onSuccess: () => router.push("/evolucao"),
       onError: (e) => avisar({ texto: comoApiError(e).message }),
     });
@@ -68,9 +70,9 @@ export function RegistrarPesoTela() {
         ) : null}
 
         <section className="mt-[22px] animate-escala rounded-[20px] bg-white px-[18px] pt-[22px] pb-[18px]" style={{ animationDelay: "140ms" }}>
-          <WeightStepper valor={valor} base={base} aoMudar={setEscolhido} />
+          <WeightStepper valor={valor} base={base} aoMudar={setEscolhido} medidas={m} />
           {anterior ? (
-            <WeightDeltaMessage objetivo={perfil.data.goal} diferencaKg={valor - anterior.weightKg} diasDesdeUltima={diasEntre(anterior.date, hoje)} />
+            <WeightDeltaMessage objetivo={perfil.data.goal} diferencaKg={valor - anterior.weightKg} diasDesdeUltima={diasEntre(anterior.date, hoje)} medidas={m} />
           ) : null}
         </section>
 
@@ -79,7 +81,7 @@ export function RegistrarPesoTela() {
             <h2 className="mt-[22px] animate-entra font-display text-[15px] font-semibold" style={{ animationDelay: "300ms" }}>
               Suas pesagens
             </h2>
-            <HistoricoPesagens pesagens={lista} />
+            <HistoricoPesagens pesagens={lista} medidas={m} />
           </>
         ) : null}
       </main>

@@ -2,6 +2,7 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { usuarioApi } from '@/mocks/fixtures/usuario';
 import { CHAVES } from '@/lib/chaves';
 import { erroDaApi, url } from '@/mocks/handlers/auth';
 import { server } from '@/mocks/server';
@@ -83,5 +84,19 @@ describe('Registrar peso (S16)', () => {
     expect(await screen.findByText('Algo deu errado do nosso lado. Tente de novo.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Salvar peso de hoje' })).toBeEnabled();
     expect(roteador.push).not.toHaveBeenCalled();
+  });
+
+  it('imperial: mostra lb e manda kg (128,7 lb → 58,4 kg, CA06)', async () => {
+    const registro = { vezes: 0 } as { corpo?: unknown; vezes: number };
+    server.use(salvando(registro), http.get(url('/me'), () => HttpResponse.json({ data: { ...usuarioApi, settings: { unit_system: 'imperial' } } })));
+    const usuario = userEvent.setup();
+
+    renderizar(<RegistrarPesoTela />);
+    await usuario.click(await screen.findByRole('button', { name: 'Digitar o peso: 128,7 lb' }));
+    await usuario.keyboard('128,7{Enter}');
+    await usuario.click(screen.getByRole('button', { name: 'Salvar peso de hoje' }));
+
+    await waitFor(() => expect(roteador.push).toHaveBeenCalledWith('/evolucao'));
+    expect(registro.corpo).toEqual({ weight_kg: 58.4 });
   });
 });

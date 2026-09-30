@@ -2,6 +2,7 @@ import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { usuarioApi } from '@/mocks/fixtures/usuario';
 import { diaApi } from '@/mocks/fixtures/dia';
 import { erroDaApi, url } from '@/mocks/handlers/auth';
 import { respondendoDia } from '@/mocks/handlers/dia';
@@ -110,5 +111,12 @@ describe('Hoje (S11)', () => {
     server.use(respondendoDia(diaApi()));
     await userEvent.setup().click(screen.getByRole('button', { name: 'Tentar de novo' }));
     expect(await screen.findByText('0 de 5 refeições')).toBeInTheDocument();
+  });
+
+  it('imperial: o card de peso em lb (CA06)', async () => {
+    server.use(http.get(url('/me'), () => HttpResponse.json({ data: { ...usuarioApi, settings: { unit_system: 'imperial' } } })));
+    renderizar(<HojeTela />);
+
+    expect(await screen.findByText('128,7 lb de 136,7 lb')).toBeInTheDocument();
   });
 });

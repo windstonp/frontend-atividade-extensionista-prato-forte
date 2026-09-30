@@ -7,10 +7,10 @@ import { Screen } from "@/components/app/Screen";
 import { IconeAjustes, IconeAvancar } from "@/components/icons";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useCatalogo } from "@/features/onboarding/hooks";
-import { peso } from "@/lib/format";
 import { DIAS_CURTOS } from "@/lib/labels";
 import { cascata } from "@/lib/motion";
-import { desdeQuando, iniciais, metros } from "../formato";
+import { useMedidas } from "@/lib/useMedidas";
+import { desdeQuando, iniciais } from "../formato";
 import { usePerfil } from "../hooks";
 import type { Perfil } from "../tipos";
 import type { Catalogo } from "@/features/onboarding/tipos";
@@ -59,6 +59,7 @@ export function PerfilTela() {
 }
 
 function Conteudo({ perfil, catalogo }: { perfil: Perfil; catalogo: Catalogo }) {
+  const m = useMedidas();
   const configuracoes = useConfiguracoes();
   const rotuloObjetivo = catalogo.goals.find((g) => g.value === perfil.goal)?.label ?? "";
   const rotuloAtividade = catalogo.activityLevels.find((a) => a.value === perfil.activityLevel)?.label ?? "";
@@ -68,7 +69,7 @@ function Conteudo({ perfil, catalogo }: { perfil: Perfil; catalogo: Catalogo }) 
   const cozinha = perfil.pantryItems.length;
 
   const itens = [
-    { href: "/onboarding/dados?editar=1", titulo: "Dados pessoais", valor: `${perfil.age} anos, ${metros(perfil.heightCm)}, ${peso(perfil.currentWeightKg)}` },
+    { href: "/onboarding/dados?editar=1", titulo: "Dados pessoais", valor: `${perfil.age} anos, ${m.altura(perfil.heightCm)}, ${m.peso(perfil.currentWeightKg)}` },
     { href: "/perfil/preferencias", titulo: "Preferências alimentares", valor: `${cozinha} ${cozinha === 1 ? "alimento" : "alimentos"} na sua cozinha` },
     { href: "/perfil/preferencias", titulo: "Restrições e alergias", valor: restricao, alerta: Boolean(alergia) },
     { href: "/onboarding/rotina?editar=1", titulo: "Rotina e horários", valor: `Treino às ${perfil.trainingTime}, ${dias}` },
@@ -104,6 +105,7 @@ function Conteudo({ perfil, catalogo }: { perfil: Perfil; catalogo: Catalogo }) 
 
       <main className="flex-1 px-5">
         <GoalCard
+          medidas={m}
           objetivo={perfil.goal}
           rotuloObjetivo={rotuloObjetivo}
           inicioKg={perfil.startWeightKg}

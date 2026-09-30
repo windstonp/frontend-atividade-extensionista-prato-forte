@@ -2,6 +2,7 @@ import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { usuarioApi } from '@/mocks/fixtures/usuario';
 import { perfilApi } from '@/mocks/fixtures/onboarding';
 import { url } from '@/mocks/handlers/auth';
 import { server } from '@/mocks/server';
@@ -77,5 +78,13 @@ describe('Perfil (S17)', () => {
     renderizar(<PerfilTela />);
 
     expect(await screen.findByRole('link', { name: /Notificações e conta[\s\S]*2 avisos ligados/ })).toHaveAttribute('href', '/perfil/configuracoes');
+  });
+
+  it('imperial: dados pessoais e objetivo em ft/in e lb (CA06)', async () => {
+    server.use(http.get(url('/me'), () => HttpResponse.json({ data: { ...usuarioApi, settings: { unit_system: 'imperial' } } })));
+    renderizar(<PerfilTela />);
+
+    expect(await screen.findByText('27 anos, 5 ft 5 in, 128,7 lb')).toBeInTheDocument();
+    expect(screen.getByText('128,7 lb hoje')).toBeInTheDocument();
   });
 });

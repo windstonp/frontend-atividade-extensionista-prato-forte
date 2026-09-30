@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { expect, within } from 'storybook/test';
+import { IMPERIAL } from '@/lib/units';
 import { GoalCard } from './GoalCard';
 
 const meta = {
@@ -50,5 +51,12 @@ export const ManterPeso: Story = {
   args: { objetivo: 'manter-peso', rotuloObjetivo: 'Manter o peso', inicioKg: 70, atualKg: 70, metaKg: 70, origemMeta: 'auto' },
   play: async ({ canvasElement }) => {
     await expect(canvasElement.querySelectorAll('[style*="NaN"]')).toHaveLength(0);
+  },
+};
+
+export const Imperial: Story = {
+  args: { medidas: IMPERIAL },
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByText('128,7 lb hoje')).toBeInTheDocument();
   },
 };

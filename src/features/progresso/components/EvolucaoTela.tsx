@@ -7,6 +7,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { Segmento } from "@/components/ui/Field";
 import { Reveal } from "@/components/ui/Reveal";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { useMedidas } from "@/lib/useMedidas";
 import { usePeriodo, useProgresso } from "../hooks";
 import type { Periodo } from "../tipos";
 import { AdherenceGrid } from "./AdherenceGrid";
@@ -23,6 +24,7 @@ const PERIODOS: { valor: Periodo; rotulo: string }[] = [
 /** S15 — peso, constância e médias (RF24, RF25). */
 export function EvolucaoTela() {
   const [periodo, setPeriodo] = usePeriodo();
+  const m = useMedidas();
   const progresso = useProgresso(periodo);
   const dados = progresso.data;
 
@@ -51,7 +53,7 @@ export function EvolucaoTela() {
           </div>
         ) : (
           <>
-            {dados.weight.points.length === 0 ? <EvolucaoVazia /> : <WeightChart key={periodo} peso={dados.weight} />}
+            {dados.weight.points.length === 0 ? <EvolucaoVazia /> : <WeightChart key={periodo} peso={dados.weight} medidas={m} />}
             <Reveal className="mt-3.5">
               <AdherenceGrid constancia={dados.adherence} />
             </Reveal>

@@ -10,7 +10,8 @@ import { Rail, ReguaPeso } from "@/components/ui/Rail";
 import { EsqueletoDoDia } from "@/components/ui/Skeleton";
 import { iniciais } from "@/features/perfil/formato";
 import { usePerfil } from "@/features/perfil/hooks";
-import { dataPorExtenso, peso, saudacao } from "@/lib/format";
+import { dataPorExtenso, saudacao } from "@/lib/format";
+import { useMedidas } from "@/lib/useMedidas";
 import { useDia, useMarcandoRefeicao, useMarcarRefeicao, useTentarPlanoDeNovo } from "../hooks";
 import { estadoSemPlano, planoSemAtivo } from "../regras";
 import { AvisoDeAlteracao } from "./AvisoDeAlteracao";
@@ -21,6 +22,7 @@ import { NoPlanState } from "./NoPlanState";
 export function HojeTela() {
   const dia = useDia();
   const perfil = usePerfil();
+  const m = useMedidas();
   const marcar = useMarcarRefeicao();
   const marcando = useMarcandoRefeicao();
   const plano = useTentarPlanoDeNovo("/hoje");
@@ -107,7 +109,7 @@ export function HojeTela() {
               <span className="w-[74px] shrink-0 text-[12.5px] text-fumo">Peso</span>
               <ReguaPeso inicio={eu.startWeightKg} atual={eu.currentWeightKg} meta={eu.goalWeightKg} />
               <span className="w-[108px] shrink-0 text-right text-[12.5px] font-semibold tabular-nums">
-                {peso(eu.currentWeightKg)} de {peso(eu.goalWeightKg)}
+                {m.peso(eu.currentWeightKg)} de {m.peso(eu.goalWeightKg)}
               </span>
             </Link>
           ) : null}
