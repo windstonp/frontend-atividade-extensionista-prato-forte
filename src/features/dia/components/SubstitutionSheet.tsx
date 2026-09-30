@@ -51,9 +51,9 @@ export function SubstitutionSheet({
           <Skeleton className="h-[86px]" />
         </div>
       ) : erro || !substituicoes ? (
-        <div className="mt-4">
-          <p className="text-sm leading-normal text-fumo">Não foi possível buscar as opções agora.</p>
-          <Button variante="contorno" className="mt-4" onClick={aoTentarDeNovo}>
+        <div className="mt-4 animate-balanca rounded-[14px] bg-alerta-fraca px-3.5 py-3">
+          <p className="text-[13.5px] leading-normal text-alerta-texto">Não foi possível buscar as opções agora.</p>
+          <Button variante="contorno" tamanho="media" className="mt-3" onClick={aoTentarDeNovo}>
             Tentar de novo
           </Button>
         </div>
@@ -156,7 +156,7 @@ function Opcoes({
           className="mt-3.5 flex animate-entra items-start gap-2.5 rounded-[14px] bg-mata-fraca px-3.5 py-3"
           style={{ animationDelay: "320ms" }}
         >
-          <IconeCheck size={17} strokeWidth={1.9} className="mt-0.5 shrink-0 text-mata" />
+          <IconeCheck size={17} strokeWidth={1.9} className="mt-0.5 shrink-0 animate-pop text-mata [animation-delay:420ms]" />
           <span className="text-[12.5px] leading-snug text-mata-texto">
             Nenhuma dessas opções tem {juntarComE(guarantee.restrictions.map((r) => r.toLocaleLowerCase("pt-BR")))}.
           </span>

@@ -52,7 +52,7 @@ export function WeekDayPicker({
             onClick={() => aoEscolher(dia)}
             onKeyDown={(e) => aoTeclar(e, i)}
             style={cascata(i, 45, 120)}
-            className={`flex h-14 w-[42px] animate-pop flex-col items-center justify-center gap-[3px] rounded-[14px] border transition-[background-color,color,border-color,transform,box-shadow] duration-250 ease-[cubic-bezier(.34,1.56,.64,1)] active:scale-90 ${
+            className={`relative flex h-14 w-[42px] animate-pop flex-col items-center justify-center gap-[3px] rounded-[14px] border transition-[background-color,color,border-color,transform,box-shadow] duration-250 ease-[cubic-bezier(.34,1.56,.64,1)] active:scale-90 ${
               ativo
                 ? "-translate-y-0.5 border-tinta bg-tinta text-white shadow-[0_10px_20px_-14px_rgba(21,37,28,1)]"
                 : "border-linha bg-white text-tinta hover:border-pedra"
@@ -60,6 +60,13 @@ export function WeekDayPicker({
           >
             <span className="text-[10.5px] font-medium opacity-80">{DIAS_CURTOS[data.getDay()]}</span>
             <span className="text-[15px] font-semibold">{data.getDate()}</span>
+            {/* hoje ganha um ponto de gema, mesmo quando outro dia está aberto */}
+            <span
+              aria-hidden
+              className={`absolute bottom-1.5 size-1 rounded-full bg-gema transition-transform duration-300 ease-[cubic-bezier(.34,1.56,.64,1)] ${
+                dia === hoje && !ativo ? "scale-100" : "scale-0"
+              }`}
+            />
           </button>
         );
       })}
