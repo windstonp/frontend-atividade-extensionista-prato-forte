@@ -2,6 +2,7 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { usuarioApi } from '@/mocks/fixtures/usuario';
 import { respostasDaCamila } from '@/mocks/fixtures/onboarding';
 import { erroDaApi, url } from '@/mocks/handlers/auth';
 import { gravandoEtapa, respondendoOnboarding } from '@/mocks/handlers/onboarding';
@@ -120,5 +121,52 @@ describe('Etapa Dados (S03)', () => {
     expect(screen.queryByLabelText('Meta de peso (opcional)')).not.toBeInTheDocument();
     await usuario.click(screen.getByRole('button', { name: 'Continuar' }));
     await waitFor(() => expect(corpos).toEqual([expect.objectContaining({ weight_kg: 70, goal_weight_kg: null })]));
+  });
+});
+
+describe('em libra e polegada (CA06)', () => {
+  beforeEach(() => {
+    server.use(http.get(url('/me'), () => HttpResponse.json({ data: { ...usuarioApi, onboarding_completed: false, next_step: 'dados', settings: { unit_system: 'imperial' } } })));
+  });
+
+  it('abre o que foi salvo em lb e ft/in', async () => {
+    server.use(respondendoOnboarding({ answers: respostasDaCamila }));
+    renderizar(<EtapaDados />);
+
+    expect(await screen.findByLabelText('Peso de hoje')).toHaveValue('128,7');
+    expect(screen.getByLabelText('Altura')).toHaveValue('5');
+    expect(screen.getByLabelText('Polegadas')).toHaveValue('5');
+    expect(screen.getByLabelText('Meta de peso (opcional)')).toHaveValue('136,7');
+  });
+
+  it('digita em lb e ft/in, a API recebe kg e cm', async () => {
+    const { handler, corpos } = gravandoEtapa('dados');
+    server.use(handler, respondendoOnboarding({ answers: { goal: 'ganhar-massa' } }));
+    const usuario = userEvent.setup();
+
+    renderizar(<EtapaDados />);
+    await usuario.type(await screen.findByLabelText('Como podemos te chamar'), 'Camila');
+    await usuario.type(screen.getByLabelText('Idade'), '27');
+    await usuario.type(screen.getByLabelText('Altura'), '5');
+    await usuario.type(screen.getByLabelText('Polegadas'), '5');
+    await usuario.type(screen.getByLabelText('Peso de hoje'), '128,7');
+    await usuario.click(screen.getByRole('radio', { name: 'Feminino' }));
+    await usuario.type(screen.getByLabelText('Meta de peso (opcional)'), '136,7');
+    await usuario.click(screen.getByRole('button', { name: 'Continuar' }));
+
+    await waitFor(() => expect(corpos).toHaveLength(1));
+    expect(corpos[0]).toMatchObject({ height_cm: 165, weight_kg: 58.4, goal_weight_kg: 62 });
+  });
+
+  it('polegadas acima de 11 não valem', async () => {
+    server.use(respondendoOnboarding({ answers: { goal: 'ganhar-massa' } }));
+    const usuario = userEvent.setup();
+
+    renderizar(<EtapaDados />);
+    await usuario.type(await screen.findByLabelText('Altura'), '5');
+    await usuario.type(screen.getByLabelText('Polegadas'), '12');
+    await usuario.click(screen.getByRole('button', { name: 'Continuar' }));
+
+    expect(await screen.findByText('Use a altura em centímetros, entre 120 e 230.')).toBeInTheDocument();
   });
 });
