@@ -28,7 +28,8 @@ async function responderAteOFim(usuario: ReturnType<typeof userEvent.setup>) {
   await usuario.click(screen.getByRole('button', { name: 'Enviar' }));
 }
 
-describe('Questionário (N08)', () => {
+// 13 telas de cliques: sob a suíte inteira passa dos 5 s padrão.
+describe('Questionário (N08)', { timeout: 20_000 }, () => {
   it('13 telas, envia as respostas e agradece (CA05)', async () => {
     let corpo: unknown;
     server.use(http.post(url('/usability-responses'), async ({ request }) => ((corpo = await request.json()), HttpResponse.json({ data: { round: '2026-1', responded: true } }, { status: 201 }))));

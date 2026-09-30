@@ -65,6 +65,55 @@ describe('useAvaliacao', () => {
   });
 });
 
+describe('useAvaliacao — toques rápidos e cache', () => {
+  it('👍 falha e 👎 dá certo (dois toques antes da resposta): fica 👎, como no servidor', async () => {
+    let pedidos = 0;
+    server.use(
+      http.put(url('/ratings'), async ({ request }) => {
+        pedidos++;
+        const { value } = (await request.json()) as { value: string };
+        await delay(40);
+        return value === 'up' ? HttpResponse.json({ message: 'x', code: 'SERVER_ERROR' }, { status: 500 }) : HttpResponse.json({ data: {} });
+      }),
+    );
+    const { result } = renderHook(() => useAvaliacao(alvo, null), comCliente());
+
+    act(() => result.current.marcar('up'));
+    act(() => result.current.marcar('down'));
+    expect(result.current.salvando).toBe(true);
+
+    await waitFor(() => expect(pedidos).toBe(2));
+    await waitFor(() => expect(result.current.salvando).toBe(false));
+    expect(result.current.valor?.value).toBe('down');
+  });
+
+  it('sem rede, 👍 e 👍 de novo: os dois falham e volta ao que o servidor tinha', async () => {
+    server.use(http.put(url('/ratings'), () => HttpResponse.error()), http.delete(url('/ratings'), () => HttpResponse.error()));
+    const { result } = renderHook(() => useAvaliacao(alvo, null), comCliente());
+
+    act(() => result.current.marcar('up'));
+    act(() => result.current.marcar('up'));
+
+    await waitFor(() => expect(result.current.salvando).toBe(false));
+    expect(result.current.valor).toBeNull();
+  });
+
+  it('salva no cache da conversa e do plano (voltar à tela mostra marcado)', async () => {
+    const { cliente, wrapper } = comCliente();
+    cliente.setQueryData(CHAVES.mensagens(5), { pages: [{ data: [{ id: 12, role: 'assistant', rating: null }], meta: {} }], pageParams: [null] });
+    cliente.setQueryData(CHAVES.plano(42), { id: 42, rating: null });
+    const { result } = renderHook(() => ({ msg: useAvaliacao(alvo, null), plano: useAvaliacao({ tipo: 'meal_plan', id: 42 }, null) }), { wrapper });
+
+    act(() => result.current.msg.marcar('up'));
+    act(() => result.current.plano.marcar('down'));
+
+    await waitFor(() => expect(result.current.msg.salvando || result.current.plano.salvando).toBe(false));
+    const pagina = cliente.getQueryData<{ pages: { data: { rating: unknown }[] }[] }>(CHAVES.mensagens(5))!;
+    expect(pagina.pages[0].data[0].rating).toEqual({ value: 'up', comment: null });
+    expect(cliente.getQueryData<{ rating: unknown }>(CHAVES.plano(42))!.rating).toEqual({ value: 'down', comment: null });
+  });
+});
+
 describe('questionário', () => {
   it('"Agora não" some com o convite na hora', async () => {
     server.use(http.get(url('/usability-responses/status'), () => HttpResponse.json({ data: { round: '2026-1', responded: false, invite: true } })));

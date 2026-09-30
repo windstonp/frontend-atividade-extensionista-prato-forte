@@ -1,40 +1,76 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { type InfiniteData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 import { useToast } from '@/components/ui/Toaster';
 import { comoApiError } from '@/lib/api/errors';
 import * as validacao from '@/lib/api/validacao';
 import { CHAVES } from '@/lib/chaves';
+import type { Plano } from '@/features/dia/tipos';
+import type { Mensagem, Pagina } from '@/features/nutri/tipos';
 import type { Alvo, Avaliacao, StatusUsabilidade, ValorAvaliacao } from './tipos';
 
 /**
- * 👍/👎 de uma resposta ou do plano (RF31): muda na hora; um pedido por vez; se falhar, volta e avisa.
- * Tocar no mesmo ícone de novo remove.
+ * 👍/👎 de uma resposta ou do plano (RF31): muda na hora; um pedido por vez. Se um pedido falhar e não
+ * houver outro depois dele, volta ao último valor que o servidor aceitou e avisa. O que foi aceito vai
+ * para o cache da conversa/do plano, para a tela voltar marcada ao navegar de volta (CA01).
  */
 export function useAvaliacao(alvo: Alvo, inicial: Avaliacao | null) {
   const avisar = useToast();
+  const cliente = useQueryClient();
   const [valor, setValor] = useState<Avaliacao | null>(inicial);
-  const [salvando, setSalvando] = useState(false);
+  const [pendentes, setPendentes] = useState(0);
+  const atual = useRef(inicial); // o que a tela mostra agora (toques no mesmo instante)
+  const confirmado = useRef(inicial); // o último valor que o servidor aceitou
+  const emVoo = useRef(0);
   const fila = useRef<Promise<unknown>>(Promise.resolve());
 
-  function salvar(novo: Avaliacao | null, anterior: Avaliacao | null) {
+  function gravarNoCache(novo: Avaliacao | null) {
+    if (alvo.tipo === 'meal_plan') {
+      cliente.setQueryData<Plano>(CHAVES.plano(alvo.id), (p) => (p ? { ...p, rating: novo } : p));
+      return;
+    }
+    cliente.setQueriesData<InfiniteData<Pagina<Mensagem>>>({ queryKey: ['mensagens'] }, (dados) =>
+      dados
+        ? {
+            ...dados,
+            pages: dados.pages.map((pg) => ({
+              ...pg,
+              data: pg.data.map((m) => (m.id === alvo.id && m.role === 'assistant' ? { ...m, rating: novo } : m)),
+            })),
+          }
+        : dados,
+    );
+  }
+
+  function salvar(novo: Avaliacao | null) {
+    atual.current = novo;
     setValor(novo);
-    setSalvando(true);
-    fila.current = fila.current
-      .then(() => (novo ? validacao.avaliar(alvo, novo.value, novo.comment) : validacao.removerAvaliacao(alvo)))
-      .catch((erro: unknown) => {
-        setValor(anterior);
-        avisar({ texto: comoApiError(erro).message });
-      })
-      .finally(() => setSalvando(false));
+    emVoo.current += 1;
+    setPendentes(emVoo.current);
+    fila.current = fila.current.then(async () => {
+      try {
+        await (novo ? validacao.avaliar(alvo, novo.value, novo.comment) : validacao.removerAvaliacao(alvo));
+        confirmado.current = novo;
+        gravarNoCache(novo);
+      } catch (erro) {
+        if (emVoo.current === 1) {
+          atual.current = confirmado.current;
+          setValor(confirmado.current);
+          avisar({ texto: comoApiError(erro).message });
+        }
+      } finally {
+        emVoo.current -= 1;
+        setPendentes(emVoo.current);
+      }
+    });
   }
 
   return {
     valor,
-    salvando,
-    marcar: (v: ValorAvaliacao) => salvar(valor?.value === v ? null : { value: v, comment: null }, valor),
-    comentar: (texto: string) => salvar({ value: 'down', comment: texto.trim() || null }, valor),
+    salvando: pendentes > 0,
+    marcar: (v: ValorAvaliacao) => salvar(atual.current?.value === v ? null : { value: v, comment: null }),
+    comentar: (texto: string) => salvar({ value: 'down', comment: texto.trim() || null }),
   };
 }
 
