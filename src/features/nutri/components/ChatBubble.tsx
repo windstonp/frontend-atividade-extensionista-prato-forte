@@ -1,4 +1,4 @@
-import { IconeRecomecar, MarcaNutri } from "@/components/icons";
+import { IconeCheck, IconeRecomecar, MarcaNutri } from "@/components/icons";
 import type { AcaoNutri, MensagemNutri } from "../tipos";
 import { MealSuggestionCard } from "./MealSuggestionCard";
 import { NutriActions } from "./NutriActions";
@@ -51,10 +51,20 @@ export function RespostaBubble({
   aplicando?: boolean;
   aoAgir: (acao: AcaoNutri) => void;
 }) {
+  // Confirmação de algo aplicado: a resposta aponta para a refeição que mudou.
+  const confirmou = mensagem.actions.some((a) => a.kind === "ver-refeicao");
   return (
     <div className="flex animate-entra-lado-esq gap-2.5">
-      <span className="animate-pop">
+      <span className="relative h-fit animate-pop">
         <MarcaNutri size={26} />
+        {confirmou ? (
+          <span
+            className="absolute -right-1 -bottom-1 flex size-3.5 animate-pop items-center justify-center rounded-full bg-mata text-neve ring-2 ring-papel"
+            style={{ animationDelay: "260ms" }}
+          >
+            <IconeCheck size={9} />
+          </span>
+        ) : null}
       </span>
       <div className="min-w-0 flex-1">
         <p className="animate-entra text-[14.5px] leading-relaxed break-words whitespace-pre-wrap">{mensagem.content}</p>

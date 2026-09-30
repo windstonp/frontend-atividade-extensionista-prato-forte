@@ -54,3 +54,22 @@ export const AssistenteComRefeicao: Story = {
     await expect(within(canvasElement).getByText('Fica 8 g de proteína abaixo do jantar original.')).toBeInTheDocument();
   },
 };
+
+export const Confirmacao: Story = {
+  render: () => (
+    <RespostaBubble
+      mensagem={{
+        ...camelizar<MensagemNutri>(respostaTrocaApi(13, { acoes: false })),
+        content: 'Feito. Seu almoço de hoje vai com batata-doce cozida.',
+        followUp: null,
+        card: null,
+        actions: [{ index: 0, kind: 'ver-refeicao', label: 'Ver a refeição', slot: 'almoco' }],
+        actionsAvailable: true,
+      }}
+      aoAgir={fn()}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole('link', { name: 'Ver a refeição' })).toHaveAttribute('href', '/dieta/almoco');
+  },
+};

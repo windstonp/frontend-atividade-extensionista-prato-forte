@@ -97,7 +97,7 @@ export function ConversasTela() {
             <h2 className="mt-7 animate-entra font-display text-[15px] font-semibold" style={{ animationDelay: "220ms" }}>
               Recentes
             </h2>
-            <ul className="mt-1 list-none rounded-[20px] bg-white px-4">
+            <ul className="mt-1 list-none rounded-[20px] bg-white px-4 [&>li:nth-child(2)]:[animation-delay:60ms] [&>li:nth-child(3)]:[animation-delay:120ms] [&>li:nth-child(4)]:[animation-delay:180ms] [&>li:nth-child(n+5)]:[animation-delay:240ms]">
               {lista.map((conversa) => (
                 <ConversationListItem
                   key={conversa.id}

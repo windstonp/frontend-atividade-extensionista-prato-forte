@@ -19,8 +19,8 @@ export function ConversationListItem({
   const href = `/nutri/${conversa.id}${pergunta ? `?pergunta=${encodeURIComponent(pergunta)}` : ""}`;
   return (
     <li className={`flex animate-entra items-start gap-3 border-b border-fio py-3.5 transition-opacity last:border-b-0 ${apagando ? "opacity-40" : ""}`}>
-      <Link href={href} className="min-w-0 flex-1 rounded-lg">
-        <p className="truncate text-[15px] font-semibold tracking-[-0.01em]">{conversa.title ?? "Conversa sem título"}</p>
+      <Link href={href} className="group min-w-0 flex-1 rounded-lg">
+        <p className="truncate text-[15px] font-semibold tracking-[-0.01em] transition-transform duration-250 ease-[cubic-bezier(.22,1,.36,1)] group-hover:translate-x-1">{conversa.title ?? "Conversa sem título"}</p>
         <p className="mt-0.5 text-xs text-fumo">
           {conversa.lastMessageAt ? `${quando(conversa.lastMessageAt, agora)}, ` : ""}
           {conversa.messageCount} {conversa.messageCount === 1 ? "mensagem" : "mensagens"}

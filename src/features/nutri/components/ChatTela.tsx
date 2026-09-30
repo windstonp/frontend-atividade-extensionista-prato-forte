@@ -154,7 +154,8 @@ export function ChatTela({ id }: { id: number }) {
         ) : vazia ? (
           <EstadoInicial nome={perfil.data?.preferredName} aoEscolher={(q) => void enviar(q)} />
         ) : (
-          <div className="flex flex-col gap-4">
+          // Ao abrir uma conversa antiga, só as últimas mensagens se movem; o histórico já chega parado.
+          <div className="flex flex-col gap-4 [&>*:not(:nth-last-child(-n+3))]:animate-none [&>*:not(:nth-last-child(-n+3))_*]:animate-none">
             {mensagens.hasNextPage ? (
               <button
                 type="button"
