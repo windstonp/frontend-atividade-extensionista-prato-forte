@@ -42,7 +42,6 @@ export default defineConfig([
   },
   {
     files: [
-      'src/app/(app)/dieta/\\[refeicao\\]/page.tsx',
       'src/app/(app)/nutri/page.tsx',
       'src/components/ui/Sheet.tsx',
       'src/components/ui/Toast.tsx',
