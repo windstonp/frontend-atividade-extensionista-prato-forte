@@ -15,4 +15,5 @@ export const CHAVES = {
   progressos: ['progresso'],
   progresso: (periodo: string) => ['progresso', periodo] as const,
   pesagens: ['pesagens'],
+  configuracoes: ['configuracoes'],
 } as const;
