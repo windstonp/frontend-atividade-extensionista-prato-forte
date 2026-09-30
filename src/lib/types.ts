@@ -14,39 +14,6 @@ export interface Macros {
   fat: number;
 }
 
-export interface Restriction {
-  id: string;
-  label: string;
-  /** Alergia nunca pode aparecer, nem em substituição */
-  allergy: boolean;
-}
-
-export interface Profile {
-  name: string;
-  initials: string;
-  email: string;
-  age: number;
-  heightCm: number;
-  weightKg: number;
-  startWeightKg: number;
-  goalWeightKg: number;
-  goal: Goal;
-  activity: ActivityLevel;
-  workPosture: "sentada" | "em-pe" | "peso-pesado";
-  trainingTime: string;
-  /** 0 = domingo */
-  trainingDays: number[];
-  wakeTime: string;
-  sleepTime: string;
-  lunchPlace: "casa" | "marmita" | "restaurante";
-  gym: string;
-  city: string;
-  memberSince: string;
-  pantry: string[];
-  dislikes: string[];
-  restrictions: Restriction[];
-}
-
 /** Etapas do onboarding, na ordem do fluxo (espelha `App\Enums\OnboardingStep`). */
 export type EtapaOnboarding =
   | "objetivo"

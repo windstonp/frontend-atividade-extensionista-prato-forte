@@ -34,18 +34,13 @@ export default defineConfig([
       ],
     },
   },
-  // LEGADO — telas do protótipo ainda ligadas ao mock. Cada plano de feature REMOVE daqui os
-  // arquivos que migrar; o Plano 08 apaga os dois blocos. Nada novo entra nesta lista.
-  {
-    files: ['src/lib/mock-api.ts'],
-    rules: { 'no-restricted-imports': 'off' },
-  },
+  // LEGADO — o protótipo com mock já saiu (Plano 07B); sobram só avisos de hooks nestes
+  // arquivos. O Plano 08 apaga este bloco. Nada novo entra nesta lista.
   {
     files: [
       'src/components/ui/Sheet.tsx',
       'src/components/ui/Toast.tsx',
       'src/lib/motion.ts',
-      'src/lib/plan-store.tsx',
     ],
     rules: { 'react-hooks/set-state-in-effect': 'warn', 'react-hooks/purity': 'warn' },
   },
