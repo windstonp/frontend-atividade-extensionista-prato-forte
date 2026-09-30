@@ -1,5 +1,6 @@
 "use client";
 
+import { useStatusUsabilidade } from "@/features/validacao/hooks";
 import Link from "next/link";
 import { BottomNav } from "@/components/app/BottomNav";
 import { ErrorState } from "@/components/app/ErrorState";
@@ -60,6 +61,7 @@ export function PerfilTela() {
 
 function Conteudo({ perfil, catalogo }: { perfil: Perfil; catalogo: Catalogo }) {
   const m = useMedidas();
+  const usabilidade = useStatusUsabilidade();
   const configuracoes = useConfiguracoes();
   const rotuloObjetivo = catalogo.goals.find((g) => g.value === perfil.goal)?.label ?? "";
   const rotuloAtividade = catalogo.activityLevels.find((a) => a.value === perfil.activityLevel)?.label ?? "";
@@ -73,6 +75,9 @@ function Conteudo({ perfil, catalogo }: { perfil: Perfil; catalogo: Catalogo }) 
     { href: "/perfil/preferencias", titulo: "Preferências alimentares", valor: `${cozinha} ${cozinha === 1 ? "alimento" : "alimentos"} na sua cozinha` },
     { href: "/perfil/preferencias", titulo: "Restrições e alergias", valor: restricao, alerta: Boolean(alergia) },
     { href: "/onboarding/rotina?editar=1", titulo: "Rotina e horários", valor: `Treino às ${perfil.trainingTime}, ${dias}` },
+    usabilidade.data?.responded
+      ? { href: "", titulo: "Avaliar o app", valor: "Obrigado por avaliar!", desabilitado: true }
+      : { href: "/perfil/avaliar", titulo: "Avaliar o app", valor: "Responda umas perguntas rápidas" },
     {
       href: "/perfil/configuracoes",
       titulo: "Notificações e conta",
@@ -118,25 +123,34 @@ function Conteudo({ perfil, catalogo }: { perfil: Perfil; catalogo: Catalogo }) 
         />
 
         <nav aria-label="Seu perfil" className="mt-4 rounded-[20px] bg-white px-[18px]">
-          {itens.map((item, i) => (
-            <Link
-              key={item.titulo}
-              href={item.href}
-              style={cascata(i, 60, 320)}
-              className={`group flex min-h-15 animate-entra items-center gap-3.5 py-3 transition-colors duration-200 hover:text-mata ${
-                i < itens.length - 1 ? "border-b border-fio" : ""
-              }`}
-            >
+          {itens.map((item, i) => {
+            const classe = `group flex min-h-15 animate-entra items-center gap-3.5 py-3 transition-colors duration-200 ${
+              "desabilitado" in item && item.desabilitado ? "" : "hover:text-mata"
+            } ${i < itens.length - 1 ? "border-b border-fio" : ""}`;
+            const conteudo = (
               <span className="flex-1">
                 <span className="block text-[15px] font-semibold">{item.titulo}</span>
-                <span className={`mt-0.5 block text-[13px] ${item.alerta ? "text-alerta" : "text-fumo"}`}>{item.valor}</span>
+                <span className={`mt-0.5 block text-[13px] ${"alerta" in item && item.alerta ? "text-alerta" : "text-fumo"}`}>{item.valor}</span>
               </span>
-              <IconeAvancar
-                size={18}
-                className="shrink-0 text-fumo transition-[color,transform] duration-250 group-hover:translate-x-1 group-hover:text-tinta"
-              />
-            </Link>
-          ))}
+            );
+            // Já respondeu o questionário nesta rodada: o item agradece e não leva a lugar nenhum (CA06).
+            if ("desabilitado" in item && item.desabilitado) {
+              return (
+                <div key={item.titulo} style={cascata(i, 60, 320)} className={classe}>
+                  {conteudo}
+                </div>
+              );
+            }
+            return (
+              <Link key={item.titulo} href={item.href} style={cascata(i, 60, 320)} className={classe}>
+                {conteudo}
+                <IconeAvancar
+                  size={18}
+                  className="shrink-0 text-fumo transition-[color,transform] duration-250 group-hover:translate-x-1 group-hover:text-tinta"
+                />
+              </Link>
+            );
+          })}
         </nav>
 
         <RefazerPlano />

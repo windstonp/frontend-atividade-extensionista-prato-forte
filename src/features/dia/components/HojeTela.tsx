@@ -1,5 +1,7 @@
 "use client";
 
+import { InviteBanner } from "@/features/validacao/components/InviteBanner";
+import { useDispensarConvite, useStatusUsabilidade } from "@/features/validacao/hooks";
 import Link from "next/link";
 import { BottomNav } from "@/components/app/BottomNav";
 import { ErrorState } from "@/components/app/ErrorState";
@@ -23,6 +25,8 @@ export function HojeTela() {
   const dia = useDia();
   const perfil = usePerfil();
   const m = useMedidas();
+  const usabilidade = useStatusUsabilidade();
+  const dispensar = useDispensarConvite();
   const marcar = useMarcarRefeicao();
   const marcando = useMarcandoRefeicao();
   const plano = useTentarPlanoDeNovo("/hoje");
@@ -86,6 +90,7 @@ export function HojeTela() {
       <AvisoDeAlteracao alteracao={lastChange} />
 
       <main className="flex-1 px-5 pt-3">
+        {usabilidade.data?.invite ? <InviteBanner aoDispensar={() => dispensar.mutate()} /> : null}
         <DayRail refeicoes={meals} ocupado={marcando} aoAlternar={(slot, done) => marcar.mutate({ slot, done })} />
 
         <section className="mt-4 animate-entra" style={{ animationDelay: "420ms" }}>

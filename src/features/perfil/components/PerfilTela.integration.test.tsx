@@ -87,4 +87,15 @@ describe('Perfil (S17)', () => {
     expect(await screen.findByText('27 anos, 5 ft 5 in, 128,7 lb')).toBeInTheDocument();
     expect(screen.getByText('128,7 lb hoje')).toBeInTheDocument();
   });
+
+  it('"Avaliar o app" leva ao questionário; depois de responder, agradece sem link (CA06)', async () => {
+    const { unmount } = renderizar(<PerfilTela />);
+    expect(await screen.findByRole('link', { name: /Avaliar o app/ })).toHaveAttribute('href', '/perfil/avaliar');
+    unmount();
+
+    server.use(http.get(url('/usability-responses/status'), () => HttpResponse.json({ data: { round: '2026-1', responded: true, invite: false } })));
+    renderizar(<PerfilTela />);
+    expect(await screen.findByText('Obrigado por avaliar!')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Avaliar o app/ })).toBeNull();
+  });
 });

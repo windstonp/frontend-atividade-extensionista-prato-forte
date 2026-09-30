@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -118,5 +118,19 @@ describe('Hoje (S11)', () => {
     renderizar(<HojeTela />);
 
     expect(await screen.findByText('128,7 lb de 136,7 lb')).toBeInTheDocument();
+  });
+
+  it('convite do questionário aparece quando elegível e "Agora não" some com ele (CA04)', async () => {
+    let dispensou = false;
+    server.use(
+      http.get(url('/usability-responses/status'), () => HttpResponse.json({ data: { round: '2026-1', responded: false, invite: !dispensou } })),
+      http.post(url('/usability-responses/dismiss'), () => ((dispensou = true), new HttpResponse(null, { status: 204 }))),
+    );
+    renderizar(<HojeTela />);
+
+    await userEvent.setup().click(await screen.findByRole('button', { name: 'Agora não' }));
+
+    expect(screen.queryByText(/^Você já usa o Prato Forte há uma semana\./)).toBeNull();
+    await waitFor(() => expect(dispensou).toBe(true));
   });
 });
