@@ -29,7 +29,9 @@ export function EtapaDados() {
 
 const inteiro = (texto: string) => (/^\d+$/.test(texto.trim()) ? Number(texto.trim()) : null);
 
-function FormDados({ etapa, respostas, m }: { etapa: Etapa; respostas: Respostas; m: Medidas }) {
+function FormDados({ etapa, respostas, m: medidasAgora }: { etapa: Etapa; respostas: Respostas; m: Medidas }) {
+  // A unidade fica a da montagem: os campos já foram preenchidos nela (trocar no meio salvaria errado).
+  const [m] = useState(medidasAgora);
   const imperial = m.sistema === "imperial";
   const exibir = (kg: number | null | undefined) => (kg == null ? "" : escreverNumero(m.exibir(kg)));
   const objetivo = respostas.goal;
@@ -53,7 +55,7 @@ function FormDados({ etapa, respostas, m }: { etapa: Etapa; respostas: Respostas
     const novo = { ...pesPol, [parte]: valor };
     setPesPol(novo);
     const pes = inteiro(novo.pes);
-    const pol = inteiro(novo.pol);
+    const pol = novo.pol.trim() === "" ? 0 : inteiro(novo.pol); // só os pés: 5 ft = 5 ft 0 in
     mudar("heightCm", pes !== null && pol !== null && pes >= 3 && pes <= 8 && pol <= 11 ? String(pesPolParaCm(pes, pol)) : "");
   }
 

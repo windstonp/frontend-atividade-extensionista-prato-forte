@@ -86,17 +86,18 @@ describe('Registrar peso (S16)', () => {
     expect(roteador.push).not.toHaveBeenCalled();
   });
 
-  it('imperial: mostra lb e manda kg (128,7 lb → 58,4 kg, CA06)', async () => {
+  it('imperial: mostra lb e manda kg (130 lb → 59,0 kg, CA06)', async () => {
     const registro = { vezes: 0 } as { corpo?: unknown; vezes: number };
     server.use(salvando(registro), http.get(url('/me'), () => HttpResponse.json({ data: { ...usuarioApi, settings: { unit_system: 'imperial' } } })));
     const usuario = userEvent.setup();
 
     renderizar(<RegistrarPesoTela />);
     await usuario.click(await screen.findByRole('button', { name: 'Digitar o peso: 128,7 lb' }));
-    await usuario.keyboard('128,7{Enter}');
+    await usuario.keyboard('130{Enter}');
+    expect(screen.getByRole('button', { name: 'Digitar o peso: 130,0 lb' })).toBeInTheDocument();
     await usuario.click(screen.getByRole('button', { name: 'Salvar peso de hoje' }));
 
     await waitFor(() => expect(roteador.push).toHaveBeenCalledWith('/evolucao'));
-    expect(registro.corpo).toEqual({ weight_kg: 58.4 });
+    expect(registro.corpo).toEqual({ weight_kg: 59 });
   });
 });
