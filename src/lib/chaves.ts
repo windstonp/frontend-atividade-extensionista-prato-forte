@@ -7,4 +7,9 @@ export const CHAVES = {
   dias: ['dia'],
   dia: (data: string) => ['dia', data] as const,
   plano: (id: number) => ['plano', id] as const,
+  conversas: ['conversas'],
+  conversa: (id: number) => ['conversa', id] as const,
+  mensagens: (id: number) => ['mensagens', id] as const,
+  contextoNutri: ['nutri', 'contexto'],
+  sugestoesNutri: ['nutri', 'sugestoes'],
 } as const;

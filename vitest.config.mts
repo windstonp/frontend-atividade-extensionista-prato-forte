@@ -4,6 +4,9 @@ import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
 import { playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vitest/config';
 
+// Datas relativas ("hoje", "ontem") são do fuso da academia, não do contêiner.
+process.env.TZ = 'America/Sao_Paulo';
+
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
