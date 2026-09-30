@@ -51,7 +51,11 @@ export function hojeLocal(agora = new Date()): string {
 /** RN35 na tela: previsão, pedido de mais pesagens ou aviso neutro; nada sem meta. */
 export function textoDaPrevisao(peso: PesoDoPeriodo): string | null {
   if (peso.goalKg === null) return null;
-  if (peso.forecast) return `No ritmo das últimas semanas, você chega na meta por volta do ${peso.forecast.label}.`;
+  if (peso.forecast) {
+    // "por volta do início/fim de…", mas "por volta de meados de…".
+    const artigo = peso.forecast.label.startsWith('meados') ? 'de' : 'do';
+    return `No ritmo das últimas semanas, você chega na meta por volta ${artigo} ${peso.forecast.label}.`;
+  }
   const pontos = peso.points;
   if (pontos.length < 3 || diasEntre(pontos[0].date, pontos[pontos.length - 1].date) < 14) {
     return 'Registre mais uma pesagem para estimar quando você chega na meta.';

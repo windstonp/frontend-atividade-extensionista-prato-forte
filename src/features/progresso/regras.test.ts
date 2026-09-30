@@ -91,6 +91,10 @@ describe('peso no stepper', () => {
 describe('textos da Evolução', () => {
   it('previsão, falta pesagem, sem previsão e sem meta', () => {
     expect(textoDaPrevisao(peso())).toBe('No ritmo das últimas semanas, você chega na meta por volta do início de dezembro.');
+    expect(textoDaPrevisao(peso({ forecast: { date: '2026-12-15', label: 'meados de dezembro' } }))).toBe(
+      'No ritmo das últimas semanas, você chega na meta por volta de meados de dezembro.',
+    );
+    expect(textoDaPrevisao(peso({ forecast: { date: '2026-12-25', label: 'fim de dezembro' } }))).toMatch(/por volta do fim de dezembro\.$/);
     expect(textoDaPrevisao(peso({ forecast: null, points: [{ date: '2026-09-28', weightKg: 58.4 }] }))).toBe(
       'Registre mais uma pesagem para estimar quando você chega na meta.',
     );
