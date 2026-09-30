@@ -4,4 +4,7 @@ export const CHAVES = {
   onboarding: ['onboarding'],
   previa: ['previa'],
   perfil: ['perfil'],
+  dias: ['dia'],
+  dia: (data: string) => ['dia', data] as const,
+  plano: (id: number) => ['plano', id] as const,
 } as const;
