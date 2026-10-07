@@ -32,29 +32,42 @@ function querMenosMovimento() {
 /** Conta de zero até o valor, com desaceleração. */
 export function useContagem(valor: number, duracao = 900, casas = 0) {
   const [atual, setAtual] = useState(valor);
-  const jaRodou = useRef(false);
+  // O que está na tela agora. Ref, e não o estado do fechamento: quando o Next
+  // desmonta e remonta os efeitos no meio da contagem, o fechamento pode estar velho.
+  const mostrado = useRef<number | null>(null);
 
   useEfeitoDeLayout(() => {
+    const mostrar = (n: number) => {
+      mostrado.current = n;
+      setAtual(n);
+    };
     if (querMenosMovimento()) {
-      setAtual(valor);
+      mostrar(valor);
       return;
     }
-    const de = jaRodou.current ? atual : 0;
-    jaRodou.current = true;
-    if (de === valor) return;
+    const de = mostrado.current ?? 0;
+    if (de === valor) {
+      mostrar(valor);
+      return;
+    }
 
     let quadro = 0;
     const inicio = performance.now();
     const passo = (agora: number) => {
-      const t = Math.min(1, (agora - inicio) / duracao);
+      // O carimbo do quadro pode ser anterior ao início: sem o piso, a conta sai negativa.
+      const t = Math.min(1, Math.max(0, (agora - inicio) / duracao));
       const suave = 1 - Math.pow(1 - t, 3);
       const bruto = de + (valor - de) * suave;
       const fator = 10 ** casas;
-      setAtual(Math.round(bruto * fator) / fator);
+      mostrar(Math.round(bruto * fator) / fator);
       if (t < 1) quadro = requestAnimationFrame(passo);
     };
     quadro = requestAnimationFrame(passo);
-    return () => cancelAnimationFrame(quadro);
+    return () => {
+      cancelAnimationFrame(quadro);
+      // Quem remontar recomeça do número que estava na tela.
+      if (mostrado.current === null) mostrado.current = de;
+    };
   }, [valor, duracao, casas]);
 
   return atual;
