@@ -13,7 +13,7 @@ import { useToast } from "@/components/ui/Toaster";
 import { comoApiError } from "@/lib/api/errors";
 import { useApagarConversa, useConversas, useNovaConversa } from "../hooks";
 import { perguntaDaUrl } from "../regras";
-import { ConversationListItem } from "./ConversationListItem";
+import { ConversationList } from "./ConversationList";
 import { Aviso } from "@/components/ui/Aviso";
 
 /** N05 — continuar uma conversa ou começar outra (RF19, RN28). */
@@ -98,32 +98,15 @@ export function ConversasTela() {
         ) : lista.length === 0 ? (
           <p className="mt-7 animate-entra text-sm leading-normal text-fumo">Nenhuma conversa por aqui. Comece uma nova quando quiser.</p>
         ) : (
-          <>
-            <h2 className="mt-7 animate-entra font-display text-[15px] font-semibold" style={{ animationDelay: "220ms" }}>
-              Recentes
-            </h2>
-            <ul className="mt-1 list-none rounded-[20px] bg-white px-4 [&>li:nth-child(2)]:[animation-delay:60ms] [&>li:nth-child(3)]:[animation-delay:120ms] [&>li:nth-child(4)]:[animation-delay:180ms] [&>li:nth-child(n+5)]:[animation-delay:240ms]">
-              {lista.map((conversa) => (
-                <ConversationListItem
-                  key={conversa.id}
-                  conversa={conversa}
-                  pergunta={pergunta || undefined}
-                  apagando={apagar.isPending && apagar.variables === conversa.id}
-                  aoApagar={() => setAlvo(conversa.id)}
-                />
-              ))}
-            </ul>
-            <div ref={fim} />
-            {conversas.hasNextPage ? (
-              <button
-                type="button"
-                onClick={() => void conversas.fetchNextPage()}
-                className="mt-3 h-11 w-full rounded-full text-sm font-semibold text-mata"
-              >
-                Ver conversas mais antigas
-              </button>
-            ) : null}
-          </>
+          <ConversationList
+            conversas={lista}
+            pergunta={pergunta || undefined}
+            apagandoId={apagar.isPending ? (apagar.variables ?? null) : null}
+            aoApagar={setAlvo}
+            temMais={Boolean(conversas.hasNextPage)}
+            aoCarregarMais={() => void conversas.fetchNextPage()}
+            fimRef={fim}
+          />
         )}
       </main>
 

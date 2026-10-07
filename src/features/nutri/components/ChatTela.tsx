@@ -6,14 +6,13 @@ import { useSearchParams } from "next/navigation";
 import { ErrorState } from "@/components/app/ErrorState";
 import { Screen } from "@/components/app/Screen";
 import { TopBar } from "@/components/app/TopBar";
-import { IconeAvancar, MarcaNutri } from "@/components/icons";
+import { MarcaNutri } from "@/components/icons";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toaster";
 import { AvisoDeAlteracao } from "@/features/dia/components/AvisoDeAlteracao";
 import { useDia } from "@/features/dia/hooks";
 import { usePerfil } from "@/features/perfil/hooks";
 import { comoApiError } from "@/lib/api/errors";
-import { cascata } from "@/lib/motion";
 import { Avaliacao } from "@/features/validacao/components/Avaliacao";
 import { useContexto, useConversa, useMensagens, usePerguntar, useResolverAcao, useSugestoes } from "../hooks";
 import { juntarPaginas, perguntaDaAcao, perguntaDaUrl, ultimasSugestoes } from "../regras";
@@ -23,6 +22,7 @@ import { PerguntaBubble, RespostaBubble } from "./ChatBubble";
 import { ContextCard } from "./ContextCard";
 import { OfflineNotice } from "./OfflineNotice";
 import { SuggestionChips } from "./SuggestionChips";
+import { SuggestionList } from "./SuggestionList";
 import { ThinkingIndicator } from "./ThinkingIndicator";
 
 function useOnline() {
@@ -251,23 +251,7 @@ function EstadoInicial({ nome, aoEscolher }: { nome?: string; aoEscolher: (q: st
         Pergunte como se estivesse falando com a nutricionista da academia.
       </p>
       <ContextCard linhas={contexto.data} />
-      <h2 className="mt-5 animate-entra font-display text-[15px] font-semibold" style={{ animationDelay: "420ms" }}>
-        Perguntas que cabem agora
-      </h2>
-      <div className="mt-2.5 flex flex-col gap-2">
-        {(sugestoes.data ?? []).map((s, i) => (
-          <button
-            key={s.id}
-            type="button"
-            onClick={() => aoEscolher(s.question)}
-            style={cascata(i, 80, 480)}
-            className="group flex min-h-15 animate-entra items-center gap-3 rounded-2xl border border-linha bg-white py-3.5 pr-3.5 pl-4 text-left transition-[border-color,box-shadow,transform] duration-250 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-0.5 hover:border-tinta hover:shadow-[0_12px_28px_-20px_rgba(21,37,28,.9)] active:scale-[0.99]"
-          >
-            <span className="flex-1 text-[14.5px] leading-snug font-medium">{s.question}</span>
-            <IconeAvancar size={18} className="shrink-0 text-fumo transition-transform duration-250 group-hover:translate-x-1" />
-          </button>
-        ))}
-      </div>
+      <SuggestionList sugestoes={sugestoes.data ?? []} aoEscolher={aoEscolher} />
     </>
   );
 }
