@@ -36,20 +36,22 @@ export function Sheet({
   });
   const [saindo, setSaindo] = useState(false);
 
-  useEffect(() => {
-    if (aberta) {
-      setMontada(true);
-      setSaindo(false);
-      return;
-    }
-    if (!montada) return;
+  // Abrir/fechar ajusta o estado durante a renderização (sem efeito em cascata); a saída anima 240 ms.
+  if (aberta && (!montada || saindo)) {
+    setMontada(true);
+    setSaindo(false);
+  } else if (!aberta && montada && !saindo) {
     setSaindo(true);
+  }
+
+  useEffect(() => {
+    if (!saindo) return;
     const t = setTimeout(() => {
       setMontada(false);
       setSaindo(false);
     }, 240);
     return () => clearTimeout(t);
-  }, [aberta, montada]);
+  }, [saindo]);
 
   useEffect(() => {
     if (!aberta) return;

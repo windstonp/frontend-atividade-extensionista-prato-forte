@@ -55,8 +55,6 @@ export function useContagem(valor: number, duracao = 900, casas = 0) {
     };
     quadro = requestAnimationFrame(passo);
     return () => cancelAnimationFrame(quadro);
-    // a contagem só precisa recomeçar quando o alvo muda
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [valor, duracao, casas]);
 
   return atual;
@@ -65,15 +63,12 @@ export function useContagem(valor: number, duracao = 900, casas = 0) {
 /** Dispara quando o elemento entra na tela, uma única vez. */
 export function useNaTela<T extends HTMLElement>(margem = "-40px") {
   const alvo = useRef<T>(null);
-  const [visivel, setVisivel] = useState(false);
+  // Sem IntersectionObserver (navegador antigo, testes): já nasce visível.
+  const [visivel, setVisivel] = useState(() => typeof IntersectionObserver === "undefined");
 
   useEffect(() => {
     const el = alvo.current;
-    if (!el) return;
-    if (typeof IntersectionObserver === "undefined") {
-      setVisivel(true);
-      return;
-    }
+    if (!el || typeof IntersectionObserver === "undefined") return;
     const observador = new IntersectionObserver(
       ([entrada]) => {
         if (entrada.isIntersecting) {

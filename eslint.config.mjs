@@ -34,14 +34,4 @@ export default defineConfig([
       ],
     },
   },
-  // LEGADO — o protótipo com mock já saiu (Plano 07B); sobram só avisos de hooks nestes
-  // arquivos. O Plano 08 apaga este bloco. Nada novo entra nesta lista.
-  {
-    files: [
-      'src/components/ui/Sheet.tsx',
-      'src/components/ui/Toast.tsx',
-      'src/lib/motion.ts',
-    ],
-    rules: { 'react-hooks/set-state-in-effect': 'warn', 'react-hooks/purity': 'warn' },
-  },
 ]);

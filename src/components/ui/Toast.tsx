@@ -15,10 +15,15 @@ export function Toast({
   segundos?: number;
 }) {
   const [saindo, setSaindo] = useState(false);
+  // Texto novo no mesmo toast: volta a aparecer inteiro.
+  const [textoVisto, setTextoVisto] = useState(texto);
+  if (textoVisto !== texto) {
+    setTextoVisto(texto);
+    setSaindo(false);
+  }
 
   useEffect(() => {
     if (!aoExpirar) return;
-    setSaindo(false);
     const some = setTimeout(() => setSaindo(true), segundos * 1000);
     const tira = setTimeout(() => aoExpirar(), segundos * 1000 + 260);
     return () => {
