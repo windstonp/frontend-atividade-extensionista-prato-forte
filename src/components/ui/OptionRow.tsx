@@ -1,5 +1,7 @@
 "use client";
 
+import { Selo } from "./Selo";
+
 export function OptionRow({
   marcado,
   onClick,
@@ -62,10 +64,7 @@ export function OptionRow({
   );
 }
 
+/** Selo "Alergia" das opções de restrição (spec 08: EtiquetaAlergia = Selo tom="alerta"). */
 export function EtiquetaAlergia() {
-  return (
-    <span className="animate-pop rounded-full bg-alerta-fraca px-2 py-[3px] text-[11px] font-semibold text-alerta">
-      Alergia
-    </span>
-  );
+  return <Selo tom="alerta">Alergia</Selo>;
 }
