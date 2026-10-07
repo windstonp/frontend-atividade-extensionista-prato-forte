@@ -15,6 +15,6 @@ export const AFIRMACOES_SUS = [
 export const ESCALA_SUS = ['Discordo totalmente', 'Discordo', 'Neutro', 'Concordo', 'Concordo totalmente'];
 
 /** Tela 11: 1 (Nada úteis) a 5 (Muito úteis). */
-export const ESCALA_UTILIDADE = ['1', '2', '3', '4', '5'];
+export const ESCALA_UTILIDADE = ['1 (nada úteis)', '2', '3', '4', '5 (muito úteis)'];
 
 export const TOTAL_DE_TELAS = 13;

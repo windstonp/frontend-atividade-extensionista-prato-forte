@@ -1,4 +1,4 @@
-import { act, renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook, screen, waitFor } from '@testing-library/react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { delay, http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
@@ -124,5 +124,21 @@ describe('questionário', () => {
     act(() => result.current.dispensar.mutate());
 
     expect(cliente.getQueryData<StatusUsabilidade>(CHAVES.usabilidade)?.invite).toBe(false);
+  });
+
+  it('"Agora não" que falha devolve o convite e avisa', async () => {
+    server.use(
+      http.get(url('/usability-responses/status'), () => HttpResponse.json({ data: { round: '2026-1', responded: false, invite: true } })),
+      http.post(url('/usability-responses/dismiss'), () => HttpResponse.json({ code: 'SERVER_ERROR', message: 'Algo deu errado do nosso lado. Tente de novo.' }, { status: 500 })),
+    );
+    const { cliente, wrapper } = comCliente();
+    const { result } = renderHook(() => ({ status: useStatusUsabilidade(), dispensar: useDispensarConvite() }), { wrapper });
+    await waitFor(() => expect(result.current.status.data?.invite).toBe(true));
+
+    act(() => result.current.dispensar.mutate());
+
+    await waitFor(() => expect(result.current.dispensar.isError).toBe(true));
+    expect(cliente.getQueryData<StatusUsabilidade>(CHAVES.usabilidade)?.invite).toBe(true);
+    expect(await screen.findByText('Não deu para esconder o convite agora. Tente de novo.')).toBeInTheDocument();
   });
 });

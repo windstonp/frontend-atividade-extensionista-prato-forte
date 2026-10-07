@@ -76,7 +76,7 @@ export function QuestionarioTela() {
       rotuloBotao={ultima ? (erro ? "Tentar de novo" : "Enviar") : "Continuar"}
       rotuloSalvando="Enviando…"
       salvando={responder.isPending}
-      erroAoSalvar={erro}
+      erroAoSalvar={ultima ? erro : null}
       aoContinuar={ultima ? enviar : () => setTela(13)}
     >
       <label htmlFor="resposta-aberta" className="sr-only">

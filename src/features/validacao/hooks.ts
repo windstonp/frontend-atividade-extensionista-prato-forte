@@ -87,8 +87,14 @@ export function useResponderQuestionario() {
 /** "Agora não": o convite some na hora (RF32). */
 export function useDispensarConvite() {
   const cliente = useQueryClient();
+  const avisar = useToast();
   return useMutation({
     mutationFn: validacao.dispensarConvite,
     onMutate: () => cliente.setQueryData<StatusUsabilidade>(CHAVES.usabilidade, (s) => (s ? { ...s, invite: false } : s)),
+    // Falhou: o convite volta (senão reaparece sozinho na próxima visita, sem explicação).
+    onError: () => {
+      cliente.setQueryData<StatusUsabilidade>(CHAVES.usabilidade, (s) => (s ? { ...s, invite: true } : s));
+      avisar({ texto: 'Não deu para esconder o convite agora. Tente de novo.' });
+    },
   });
 }

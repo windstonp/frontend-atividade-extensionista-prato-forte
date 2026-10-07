@@ -69,6 +69,31 @@ describe('Questionário (N08)', { timeout: 20_000 }, () => {
     expect(await screen.findByRole('heading', { name: 'Obrigado por avaliar!' })).toBeInTheDocument();
   });
 
+  it('o erro do envio fica na tela 13: voltando à 12 ele não aparece', async () => {
+    server.use(http.post(url('/usability-responses'), () => erroDaApi(500, 'SERVER_ERROR', 'Algo deu errado do nosso lado. Tente de novo.')));
+    const usuario = userEvent.setup();
+
+    renderizar(<QuestionarioTela />);
+    await responderAteOFim(usuario);
+    await screen.findByText('Algo deu errado do nosso lado. Tente de novo.');
+    await usuario.click(screen.getByRole('button', { name: /Voltar/ }));
+
+    expect(await screen.findByLabelText('O que mais te ajudou?')).toBeInTheDocument();
+    expect(screen.queryByText('Algo deu errado do nosso lado. Tente de novo.')).toBeNull();
+  });
+
+  it('a escala de utilidade diz o que são as pontas', async () => {
+    const usuario = userEvent.setup();
+    renderizar(<QuestionarioTela />);
+    for (const resposta of RESPOSTAS) {
+      await usuario.click(await screen.findByRole('radio', { name: resposta }));
+      await usuario.click(screen.getByRole('button', { name: 'Continuar' }));
+    }
+
+    expect(await screen.findByRole('radio', { name: '1 (nada úteis)' })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: '5 (muito úteis)' })).toBeInTheDocument();
+  });
+
   it('já respondeu (409): agradece (CA06)', async () => {
     server.use(http.post(url('/usability-responses'), () => erroDaApi(409, 'ALREADY_RESPONDED', 'Você já respondeu. Obrigado!')));
     const usuario = userEvent.setup();
