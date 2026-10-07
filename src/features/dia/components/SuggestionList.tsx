@@ -26,7 +26,12 @@ export function SuggestionList({ itens, aoRegistrar, aoRegistrarTodos, aoTrocar,
             <span className="min-w-0 flex-1">
               <span className={`block text-[14px] font-medium ${item.registered ? "text-fumo" : "text-tinta"}`}>{item.name}</span>
               <span className="block text-[12.5px] text-fumo">{item.amount} · {item.calories} kcal</span>
-              {item.replacedFrom ? <Selo tom="gema" className="mt-1">No lugar de {item.replacedFrom.toLowerCase()}</Selo> : null}
+              {item.replacedFrom ? (
+                <span className="mt-1 flex flex-wrap items-center gap-1.5">
+                  <Selo tom="gema">Trocado</Selo>
+                  <span className="text-[12px] text-fumo">No lugar de {item.replacedFrom.toLowerCase()}</span>
+                </span>
+              ) : null}
             </span>
             {aoTrocar && !item.registered && item.id !== null ? (
               <button type="button" onClick={() => aoTrocar(item)} aria-label={`Trocar ${item.name}`}

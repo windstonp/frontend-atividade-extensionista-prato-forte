@@ -7,25 +7,35 @@ import { NutriBar } from "@/components/app/NutriBar";
 import { Screen } from "@/components/app/Screen";
 import { TopBar } from "@/components/app/TopBar";
 import { IconeCheck } from "@/components/icons";
-import { CountUp } from "@/components/ui/CountUp";
-import { RailSimples } from "@/components/ui/Rail";
+import { Selo } from "@/components/ui/Selo";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { comoApiError } from "@/lib/api/errors";
-import { gramas, porcentagem } from "@/lib/format";
-import { useDia, useSubstituicoes, useTentarPlanoDeNovo, useTrocarItem } from "../hooks";
+import { useDia, useRegistrando, useRegistrar, useSubstituicoes, useTentarPlanoDeNovo, useTrocarItem } from "../hooks";
+import { metaDaRefeicao } from "../registro";
 import { estadoSemPlano, planoSemAtivo } from "../regras";
-import type { ItemDoDia } from "../tipos";
+import type { ItemDoDia, Registro } from "../tipos";
+import { AddFoodSheet } from "./AddFoodSheet";
 import { AvisoDeAlteracao } from "./AvisoDeAlteracao";
-import { FoodItemRow } from "./FoodItemRow";
+import { EntryList } from "./EntryList";
+import { MealGoal } from "./MealGoal";
 import { NoPlanState } from "./NoPlanState";
 import { SubstitutionSheet } from "./SubstitutionSheet";
-import { Selo } from "@/components/ui/Selo";
+import { SuggestionList } from "./SuggestionList";
 
-/** S13 — uma refeição de hoje: o que vai no prato, trocas (RF14), desfazer (RF15) e marcar (RF13). */
-export function DetalheTela({ slot }: { slot: string }) {
-  const dia = useDia();
+type Folha = { tipo: "novo" } | { tipo: "editar"; registro: Registro };
+
+/**
+ * S13 (spec 09) — o que eu comi × a sugestão: régua da meta, registros, sugestão com +,
+ * trocas (só hoje) e desfazer. Hoje, ou ontem com `data`.
+ */
+export function DetalheTela({ slot, data }: { slot: string; data?: string }) {
+  const chave = data ?? "today";
+  const dia = useDia(chave);
+  const registrar = useRegistrar(chave);
+  const registrando = useRegistrando();
   const trocar = useTrocarItem();
   const [alvo, setAlvo] = useState<ItemDoDia | null>(null);
+  const [folha, setFolha] = useState<Folha | null>(null);
   const opcoes = useSubstituicoes(alvo?.id ?? null);
   const plano = useTentarPlanoDeNovo("/dieta");
   const semPlano = planoSemAtivo(dia.error);
@@ -67,8 +77,8 @@ export function DetalheTela({ slot }: { slot: string }) {
         <TopBar voltarPara="/dieta" rotuloVoltar="Voltar para a dieta" />
         <main className="flex-1 px-5 pt-3">
           <Skeleton className="h-10 w-40" />
-          <Skeleton className="mt-4 h-[180px] rounded-3xl" />
-          <Skeleton className="mt-5 h-[300px] rounded-3xl" />
+          <Skeleton className="mt-4 h-[200px] rounded-3xl" />
+          <Skeleton className="mt-5 h-[160px] rounded-3xl" />
         </main>
       </Screen>
     );
@@ -91,9 +101,12 @@ export function DetalheTela({ slot }: { slot: string }) {
     );
   }
 
-  const { targets, totals, lastChange } = dia.data;
-  const metas = targets ?? { kcal: totals.planned.calories, proteinG: totals.planned.protein, carbsG: totals.planned.carbs, fatG: totals.planned.fat };
+  const { editable, isToday, lastChange } = dia.data;
+  const meta = metaDaRefeicao(refeicao);
   const proteico = [...refeicao.items].sort((a, b) => b.macros.protein - a.macros.protein)[0];
+  const quando = `${isToday ? "Hoje" : "Ontem"} às ${refeicao.time}${refeicao.note ? `, ${refeicao.note.toLowerCase()}` : ""}`;
+  const registrarItens = (itens: ItemDoDia[]) =>
+    registrar.mutate({ slot: refeicao.slot, entries: itens.map((i) => ({ suggestionItemId: i.id as number })) });
 
   function usar(foodId: number) {
     if (!alvo?.id) return;
@@ -114,9 +127,9 @@ export function DetalheTela({ slot }: { slot: string }) {
         voltarPara="/dieta"
         rotuloVoltar="Voltar para a dieta"
         direita={
-          refeicao.done ? (
+          refeicao.goalMet ? (
             <Selo tom="mata" icone={<IconeCheck size={12} strokeWidth={2.4} />}>
-              Refeição feita
+              Meta batida
             </Selo>
           ) : refeicao.isNext ? (
             <Selo tom="gema" pulsante>
@@ -126,57 +139,39 @@ export function DetalheTela({ slot }: { slot: string }) {
         }
       />
 
-      <AvisoDeAlteracao alteracao={lastChange} />
+      <AvisoDeAlteracao alteracao={isToday ? lastChange : null} />
 
-      <main className="flex-1 px-5 pt-3">
+      <main className="flex-1 px-5 pt-3 pb-4">
         <h1 className="animate-entra font-display text-[34px] leading-[1.05] font-bold tracking-[-0.03em]">{refeicao.name}</h1>
-        <p className="mt-1.5 animate-entra text-[13.5px] text-fumo" style={{ animationDelay: "80ms" }}>
-          Hoje às {refeicao.time}
-          {refeicao.note ? `, ${refeicao.note.toLowerCase()}` : ""}
+        <p className="mt-1.5 mb-4 animate-entra text-[13.5px] text-fumo" style={{ animationDelay: "80ms" }}>
+          {quando}
         </p>
 
-        <section className="mt-4 animate-escala rounded-[20px] bg-white px-[18px] py-4" style={{ animationDelay: "140ms" }}>
-          <div className="flex items-baseline justify-between gap-3">
-            <p className="font-display text-4xl font-bold tracking-[-0.03em]">
-              <CountUp valor={Math.round(refeicao.calories)} duracao={1000} />{" "}
-              <span className="text-[17px] font-semibold tracking-normal text-fumo">kcal</span>
-            </p>
-            <span className="shrink-0 text-[12.5px] text-fumo">{Math.round(porcentagem(refeicao.calories, metas.kcal))}% do seu dia</span>
-          </div>
+        <MealGoal meta={meta} consumido={refeicao.consumed} temRegistro={refeicao.entries.length > 0} />
 
-          <div className="mt-3.5 border-t border-fio pt-3.5">
-            <RailSimples rotulo="Proteína" valor={gramas(refeicao.macros.protein)} proporcao={porcentagem(refeicao.macros.protein, metas.proteinG)} cor="bg-tinta" atraso={320} />
-            <RailSimples rotulo="Carboidrato" valor={gramas(refeicao.macros.carbs)} proporcao={porcentagem(refeicao.macros.carbs, metas.carbsG)} cor="bg-gema" atraso={400} />
-            <RailSimples rotulo="Gordura" valor={gramas(refeicao.macros.fat)} proporcao={porcentagem(refeicao.macros.fat, metas.fatG)} cor="bg-mata" atraso={480} />
-            <p className="mt-2.5 text-xs text-fumo">As barras mostram quanto esta refeição cobre da sua meta do dia.</p>
-          </div>
-        </section>
+        <EntryList
+          registros={refeicao.entries}
+          aoAbrir={editable ? (r) => setFolha({ tipo: "editar", registro: r }) : undefined}
+          aoAdicionar={editable ? () => setFolha({ tipo: "novo" }) : undefined}
+        />
 
-        <h2 className="mt-5 animate-entra font-display text-[15px] font-semibold" style={{ animationDelay: "300ms" }}>
-          O que vai no prato
-        </h2>
-
-        <ul className="mt-2.5 list-none rounded-[20px] bg-white px-[18px]">
-          {refeicao.items.map((item, i) => (
-            <FoodItemRow
-              key={item.id ?? `${item.foodId}-${i}`}
-              item={item}
-              indice={i}
-              ultimo={i === refeicao.items.length - 1}
-              aoTrocar={item.id !== null && dia.data.editable ? () => setAlvo(item) : undefined}
-            />
-          ))}
-        </ul>
+        <SuggestionList
+          itens={refeicao.items}
+          ocupado={registrando}
+          aoRegistrar={editable ? (i) => registrarItens([i]) : undefined}
+          aoRegistrarTodos={editable ? registrarItens : undefined}
+          aoTrocar={editable && isToday ? (i) => setAlvo(i) : undefined}
+        />
       </main>
 
-      <footer className="flex shrink-0 animate-entra flex-col gap-2.5 px-5 pt-3.5 pb-seguro-7" style={{ animationDelay: "560ms" }}>
-        {proteico ? (
+      {proteico && editable ? (
+        <footer className="shrink-0 px-5 pt-2 pb-seguro-7">
           <NutriBar
             href={`/nutri?pergunta=${encodeURIComponent(`Não tenho ${proteico.name.toLowerCase()} em casa. O que uso no lugar?`)}`}
             texto={`Não tenho ${proteico.name.toLowerCase()} em casa`}
           />
-        ) : null}
-      </footer>
+        </footer>
+      ) : null}
 
       <SubstitutionSheet
         item={alvo}
@@ -188,6 +183,7 @@ export function DetalheTela({ slot }: { slot: string }) {
         aoTrocar={usar}
         aoFechar={() => setAlvo(null)}
       />
+      <AddFoodSheet aberta={folha !== null} modo={folha ?? { tipo: "novo" }} slot={refeicao.slot} dataChave={chave} aoFechar={() => setFolha(null)} />
     </Screen>
   );
 }

@@ -1,9 +1,11 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { DetalheTela } from "@/features/dia/components/DetalheTela";
 
+/** `?data=AAAA-MM-DD` abre a refeição de ontem (spec 09 RF36); sem ela, hoje. */
 export default function DetalheRefeicao() {
   const { refeicao } = useParams<{ refeicao: string }>();
-  return <DetalheTela slot={refeicao} />;
+  const data = useSearchParams().get("data") ?? undefined;
+  return <DetalheTela slot={refeicao} data={data} />;
 }

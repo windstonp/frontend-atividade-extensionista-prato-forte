@@ -1,9 +1,10 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { http, HttpResponse } from 'msw';
+import { delay, http, HttpResponse } from 'msw';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { diaApi, substituicoesApi } from '@/mocks/fixtures/dia';
+import { diaApi, refeicaoApi, registroDaSugestao, substituicoesApi } from '@/mocks/fixtures/dia';
 import { erroDaApi, url } from '@/mocks/handlers/auth';
+import { respondendoDia } from '@/mocks/handlers/dia';
 import { server } from '@/mocks/server';
 import { redefinirNavegacao } from '@/test/next-navigation';
 import { renderizar } from '@/test/renderizar';
@@ -68,14 +69,73 @@ describe('Detalhe da refeição (S13)', () => {
     await vi.waitFor(() => expect(buscas).toBe(2));
   });
 
-  it('marca como feita e mostra "Desmarcar refeição"', async () => {
-    server.use(http.patch(url('/days/2026-09-28/meals/almoco'), () => HttpResponse.json({ data: diaApi({ feitas: ['almoco'] }) })));
-
+  it('"+" registra na hora, vira ✓ e a régua sobe (CA31, Review Focus 1)', async () => {
+    let pedidos = 0;
+    server.use(http.post(url('/days/2026-09-28/meals/almoco/entries'), async () => {
+      pedidos++;
+      await delay(100);
+      const dia = diaApi({ registros: { almoco: [registroDaSugestao(refeicaoApi('almoco', 2, false, false).items[0])] } });
+      return HttpResponse.json({ data: dia }, { status: 201 });
+    }));
+    const u = userEvent.setup();
     renderizar(<DetalheTela slot="almoco" />);
-    await userEvent.setup().click(await screen.findByRole('button', { name: 'Marcar como feita' }));
 
-    expect(await screen.findByRole('button', { name: 'Desmarcar refeição' })).toBeInTheDocument();
-    expect(screen.getByText('Refeição feita')).toBeInTheDocument();
+    const mais = await screen.findByRole('button', { name: 'Registrar Arroz branco cozido, 150 g, mais ou menos 6 colheres de sopa' });
+    await u.click(mais);
+    expect(await screen.findByRole('button', { name: 'Arroz branco cozido já registrado' })).toBeDisabled();
+    expect(screen.getByRole('meter')).toHaveAttribute('aria-valuenow', '192');
+    await waitFor(() => expect(pedidos).toBe(1));
+  });
+
+  it('"Adicionar os 4" manda todos numa requisição (CA32)', async () => {
+    let corpo: unknown;
+    server.use(http.post(url('/days/2026-09-28/meals/almoco/entries'), async ({ request }) => {
+      corpo = await request.json();
+      return HttpResponse.json({ data: diaApi({ feitas: ['almoco'] }) }, { status: 201 });
+    }));
+    const u = userEvent.setup();
+    renderizar(<DetalheTela slot="almoco" />);
+    await u.click(await screen.findByRole('button', { name: 'Adicionar os 4' }));
+    expect(corpo).toEqual({ entries: [5020, 5021, 5022, 5023].map((id) => ({ suggestion_item_id: id })) });
+  });
+
+  it('não tem mais "Marcar como feita"', async () => {
+    renderizar(<DetalheTela slot="almoco" />);
+    await screen.findByRole('heading', { name: 'Almoço' });
+    expect(screen.queryByRole('button', { name: /Marcar como feita|Desmarcar refeição/ })).toBeNull();
+  });
+
+  it('ontem: título, sem "Trocar", escreve na data de ontem (CA39)', async () => {
+    let caminho = '';
+    server.use(
+      http.get(url('/days/2026-09-27'), () => HttpResponse.json({ data: diaApi({ data: '2026-09-27', hoje: false, editavel: true }) })),
+      http.post(url('/days/2026-09-27/meals/jantar/entries'), ({ request }) => {
+        caminho = new URL(request.url).pathname;
+        return HttpResponse.json({ data: diaApi({ data: '2026-09-27', hoje: false, editavel: true, feitas: ['jantar'] }) }, { status: 201 });
+      }),
+    );
+    const u = userEvent.setup();
+    renderizar(<DetalheTela slot="jantar" data="2026-09-27" />);
+    expect(await screen.findByText(/^Ontem às 20:30/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Trocar/ })).toBeNull();
+    await u.click(screen.getByRole('button', { name: /^Registrar Patinho moído/ }));
+    await waitFor(() => expect(caminho).toBe('/api/v1/days/2026-09-27/meals/jantar/entries'));
+  });
+
+  it('dia virou: DAY_NOT_EDITABLE avisa e recarrega (Review Focus 4)', async () => {
+    server.use(http.post(url('/days/2026-09-28/meals/almoco/entries'), () => erroDaApi(409, 'DAY_NOT_EDITABLE', 'Esse dia não pode mais ser alterado.')));
+    const u = userEvent.setup();
+    renderizar(<DetalheTela slot="almoco" />);
+    await u.click(await screen.findByRole('button', { name: /^Registrar Arroz/ }));
+    expect(await screen.findByText('O dia virou. Atualizamos para hoje.')).toBeInTheDocument();
+  });
+
+  it('tocar num registro abre a edição', async () => {
+    server.use(respondendoDia(diaApi({ feitas: ['almoco'] })));
+    const u = userEvent.setup();
+    renderizar(<DetalheTela slot="almoco" />);
+    await u.click(await screen.findByRole('button', { name: /^Arroz branco cozido, 150 g/ }));
+    expect(await screen.findByRole('dialog', { name: 'Editar registro' })).toBeInTheDocument();
   });
 
   it('Nutri pergunta pelo alimento mais proteico', async () => {
