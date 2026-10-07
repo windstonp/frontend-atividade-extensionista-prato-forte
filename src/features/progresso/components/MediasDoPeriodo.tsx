@@ -11,8 +11,8 @@ export function MediasDoPeriodo({ medias }: { medias: Medias }) {
         <p className="animate-entra rounded-[20px] bg-white px-[18px] py-4 text-[13.5px] leading-snug text-fumo">Marque suas refeições para ver suas médias aqui.</p>
       ) : (
         <>
-          <Rail rotulo="Proteína" valor={protein.avgG} meta={protein.targetG ?? protein.avgG} atraso={200} />
-          <Rail rotulo="Calorias" valor={calories.avgKcal} meta={calories.targetKcal ?? calories.avgKcal} unidade="kcal" cor="bg-gema" atraso={280} />
+          <Rail rotulo="Proteína" valor={protein.avgG} meta={protein.targetG ?? undefined} atraso={200} />
+          <Rail rotulo="Calorias" valor={calories.avgKcal} meta={calories.targetKcal ?? undefined} unidade="kcal" cor="bg-gema" atraso={280} />
           {medias.insight ? <p className="mt-2 text-[12.5px] leading-snug text-fumo">{medias.insight}</p> : null}
         </>
       )}

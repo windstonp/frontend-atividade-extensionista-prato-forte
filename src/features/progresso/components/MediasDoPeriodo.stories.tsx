@@ -27,3 +27,13 @@ export const Vazio: Story = {
     await expect(within(canvasElement).getByText('Marque suas refeições para ver suas médias aqui.')).toBeInTheDocument();
   },
 };
+
+export const SemMeta: Story = {
+  args: (() => {
+    const medias = camelizar<Progresso>(progressoApi()).averages;
+    return { medias: { ...medias, protein: { ...medias.protein, targetG: null }, calories: { ...medias.calories, targetKcal: null } } };
+  })(),
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.textContent).not.toMatch(/\d\/\d/);
+  },
+};

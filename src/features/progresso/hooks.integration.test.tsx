@@ -77,4 +77,16 @@ describe('hooks da Evolução', () => {
     act(() => result.current[1]('3m'));
     expect(result.current[0]).toBe('3m');
   });
+
+  it('usePeriodo: leitura funciona mas a escrita falha (cota cheia) — vale a escolha nova', () => {
+    localStorage.setItem('pf:periodo-evolucao', '6w');
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('QuotaExceededError');
+    });
+    const { result } = renderHook(() => usePeriodo());
+
+    act(() => result.current[1]('3m'));
+
+    expect(result.current[0]).toBe('3m');
+  });
 });

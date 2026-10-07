@@ -16,7 +16,8 @@ export function Rail({
 }: {
   rotulo: string;
   valor: number;
-  meta: number;
+  /** Sem meta: a barra fica cheia e só o valor aparece (nada de "92/92 g"). */
+  meta?: number;
   unidade?: string;
   cor?: string;
   fundo?: string;
@@ -30,11 +31,12 @@ export function Rail({
       <span className={`relative h-1.5 flex-1 overflow-hidden rounded-full ${fundo}`}>
         <span
           className={`absolute inset-y-0 left-0 rounded-full transition-[width] duration-[900ms] ease-[cubic-bezier(.22,1,.36,1)] ${cor}`}
-          style={{ width: montado ? `${porcentagem(valor, meta)}%` : "0%" }}
+          style={{ width: montado ? `${meta === undefined ? 100 : porcentagem(valor, meta)}%` : "0%" }}
         />
       </span>
       <span className="w-[68px] shrink-0 text-right text-[12.5px] font-semibold tabular-nums">
-        <CountUp valor={Math.round(valor)} duracao={900} />/{Math.round(meta)} {unidade}
+        <CountUp valor={Math.round(valor)} duracao={900} />
+        {meta === undefined ? "" : `/${Math.round(meta)}`} {unidade}
       </span>
     </div>
   );

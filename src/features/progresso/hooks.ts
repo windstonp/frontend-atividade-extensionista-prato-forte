@@ -33,20 +33,23 @@ export function useRegistrarPeso() {
 const CHAVE = 'pf:periodo-evolucao';
 const PERIODOS: Periodo[] = ['6w', '3m', 'all'];
 const ouvintes = new Set<() => void>();
-let naMemoria: Periodo = '6w'; // só quando o navegador não deixa usar o localStorage
+// Só quando a última gravação no localStorage falhou (aba anônima, cota cheia): vale mais que o salvo.
+let naMemoria: Periodo | null = null;
 
 function ler(): Periodo {
+  if (naMemoria !== null) return naMemoria;
   try {
     const salvo = localStorage.getItem(CHAVE);
     return PERIODOS.includes(salvo as Periodo) ? (salvo as Periodo) : '6w';
   } catch {
-    return naMemoria;
+    return '6w';
   }
 }
 
 function gravar(periodo: Periodo) {
   try {
     localStorage.setItem(CHAVE, periodo);
+    naMemoria = null;
   } catch {
     naMemoria = periodo; // aba anônima ou storage bloqueado: fica só na memória
   }
