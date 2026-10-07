@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { ErrorState } from "@/components/app/ErrorState";
 import { Screen } from "@/components/app/Screen";
 import { TopBar } from "@/components/app/TopBar";
@@ -42,7 +42,6 @@ function useOnline() {
 
 /** S14 — o chat (RF20, RF21). */
 export function ChatTela({ id }: { id: number }) {
-  const router = useRouter();
   const avisar = useToast();
   const online = useOnline();
   const conversa = useConversa(id);
@@ -85,7 +84,8 @@ export function ChatTela({ id }: { id: number }) {
     if (!pergunta || perguntar.isPending) return;
     setRascunho("");
     // A pergunta vinda de outra tela já foi usada: sai do endereço para não voltar ao campo.
-    if (busca.has("pergunta")) router.replace(`/nutri/${id}`, { scroll: false });
+    // replaceState (não router.replace): sem ida ao servidor, que offline viraria recarga completa.
+    if (busca.has("pergunta")) window.history.replaceState(null, "", `/nutri/${id}`);
     const local: Pendente = { id: `p-${++sequencia.current}`, content: pergunta, status: "enviando" };
     if (!navigator.onLine) {
       setPendente({ ...local, status: "falhou" });

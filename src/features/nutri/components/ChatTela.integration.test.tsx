@@ -56,7 +56,9 @@ describe('Chat do Nutri (S14)', () => {
     await screen.findByDisplayValue('Não tenho frango em casa');
     await usuario.click(screen.getByRole('button', { name: 'Enviar pergunta' }));
 
-    await waitFor(() => expect(roteador.replace).toHaveBeenCalledWith('/nutri/5', { scroll: false }));
+    // Sem navegação do roteador (offline viraria recarga completa): só o endereço muda.
+    await waitFor(() => expect(window.location.pathname + window.location.search).toBe('/nutri/5'));
+    expect(roteador.replace).not.toHaveBeenCalled();
   });
 
   it('pergunta, mostra a resposta com cartão e chips; tocar num chip envia (RF20, CA13)', async () => {
