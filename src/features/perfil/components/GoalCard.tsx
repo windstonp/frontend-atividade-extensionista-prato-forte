@@ -3,6 +3,7 @@ import { ReguaPeso } from "@/components/ui/Rail";
 import type { OrigemDaMeta } from "@/features/onboarding/tipos";
 import { type Medidas, METRICO } from "@/lib/units";
 import type { Goal } from "@/lib/types";
+import { Selo } from "@/components/ui/Selo";
 
 /** Cartão do objetivo no Perfil (S17). Sem meta (disposição, CA05), a régua some. */
 export function GoalCard({
@@ -41,9 +42,13 @@ export function GoalCard({
           </div>
           <div className="mt-2 flex justify-between text-[12.5px]">
             <span className="text-salvia">{m.peso(atualKg)} hoje</span>
-            <span className="text-musgo">
-              {origemMeta === "suggested" ? "meta sugerida" : "meta"} {m.peso(metaKg)}
-            </span>
+            {origemMeta === "suggested" ? (
+              <Selo tom="gema">
+                meta sugerida {m.peso(metaKg)}
+              </Selo>
+            ) : (
+              <span className="text-musgo">meta {m.peso(metaKg)}</span>
+            )}
           </div>
         </>
       ) : null}

@@ -1,5 +1,6 @@
 import { Toggle } from "@/components/ui/Toggle";
 import type { Avisos } from "../tipos";
+import { Aviso } from "@/components/ui/Aviso";
 
 export type EstadoDosAvisos = "ok" | "negada" | "sem-suporte" | "ios-sem-pwa" | "sem-servidor";
 
@@ -33,9 +34,9 @@ export function AvisosNoCelular({
     <section>
       <h2 className="mt-[22px] text-[12.5px] font-semibold text-fumo">Avisos no celular</h2>
       {estado !== "ok" ? (
-        <p role="status" className="mt-2.5 animate-entra rounded-2xl bg-gema-fraca px-4 py-3 text-[13px] leading-snug text-gema-texto">
+        <Aviso tom="gema" className="mt-2.5">
           {MENSAGEM[estado]}
-        </p>
+        </Aviso>
       ) : null}
       <div className="mt-2.5 rounded-[20px] bg-white px-[18px]">
         {ITENS.map((item, i) => (

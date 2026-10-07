@@ -1,6 +1,7 @@
 import { gramas, kcal } from "@/lib/format";
 import { cascata } from "@/lib/motion";
 import type { CartaoRefeicao } from "../tipos";
+import { Aviso } from "@/components/ui/Aviso";
 
 /** Refeição inteira proposta pelo Nutri (RN31). */
 export function MealSuggestionCard({ cartao }: { cartao: CartaoRefeicao }) {
@@ -39,10 +40,9 @@ export function MealSuggestionCard({ cartao }: { cartao: CartaoRefeicao }) {
         </div>
       </div>
       {cartao.warning ? (
-        <div className="mt-3 flex animate-entra items-start gap-2.5 rounded-[14px] bg-gema-fraca px-3.5 py-3" style={{ animationDelay: "560ms" }}>
-          <span className="mt-1.5 size-1.5 shrink-0 animate-respira rounded-full bg-gema" />
-          <span className="text-[12.5px] leading-snug text-gema-texto">{cartao.warning}</span>
-        </div>
+        <Aviso tom="gema" className="mt-3 [animation-delay:560ms]">
+          {cartao.warning}
+        </Aviso>
       ) : null}
     </>
   );

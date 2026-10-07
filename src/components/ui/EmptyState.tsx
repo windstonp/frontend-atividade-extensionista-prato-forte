@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Button, ButtonLink } from "./Button";
 
 type Acao = { rotulo: string; href: string; onClick?: never } | { rotulo: string; onClick: () => void; href?: never };
 
@@ -19,7 +19,6 @@ export function EmptyState({
   className?: string;
 }) {
   const escuro = tom === "escuro";
-  const botao = "mt-4 inline-flex h-12 items-center justify-center rounded-full bg-gema px-6 text-[15px] font-semibold text-tinta transition-transform active:scale-[0.97]";
   return (
     <section className={`animate-entra rounded-[20px] p-[18px] ${escuro ? "bg-tinta text-neve" : "bg-white"} ${className}`}>
       {ilustracao}
@@ -27,13 +26,13 @@ export function EmptyState({
       {descricao ? <p className={`mt-2 text-sm leading-normal ${escuro ? "text-salvia" : "text-fumo"}`}>{descricao}</p> : null}
       {acao ? (
         acao.href !== undefined ? (
-          <Link href={acao.href} className={botao}>
+          <ButtonLink href={acao.href} className="mt-4">
             {acao.rotulo}
-          </Link>
+          </ButtonLink>
         ) : (
-          <button type="button" onClick={acao.onClick} className={botao}>
+          <Button className="mt-4" onClick={acao.onClick}>
             {acao.rotulo}
-          </button>
+          </Button>
         )
       ) : null}
     </section>

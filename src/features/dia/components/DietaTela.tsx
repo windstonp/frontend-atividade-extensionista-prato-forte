@@ -14,6 +14,7 @@ import { estadoSemPlano, planoSemAtivo, semanaDe } from "../regras";
 import { MealRow } from "./MealRow";
 import { NoPlanState } from "./NoPlanState";
 import { WeekDayPicker } from "./WeekDayPicker";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 const DIAS_LONGOS = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
 
@@ -108,7 +109,7 @@ function Conteudo({ dia }: { dia: ReturnType<typeof useDia> }) {
       </div>
 
       {meals.length === 0 ? (
-        <p className="mt-8 animate-entra text-center text-[14.5px] text-fumo">Nada registrado neste dia</p>
+        <EmptyState titulo="Nada registrado neste dia" className="mt-6" />
       ) : (
         <div className="relative pl-6">
           <span className="absolute top-4 bottom-4 left-[5px] block w-0.5 rounded-full bg-linha" />

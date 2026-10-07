@@ -1,6 +1,7 @@
 import { gramas, kcal } from "@/lib/format";
 import { cascata } from "@/lib/motion";
 import type { ItemDoDia } from "../tipos";
+import { Selo } from "@/components/ui/Selo";
 
 /** Um alimento do prato: porção em medida caseira, kcal e macros, selo "Trocado". */
 export function FoodItemRow({
@@ -23,9 +24,7 @@ export function FoodItemRow({
         <div className="flex items-center gap-2">
           <span className="text-[15px] font-semibold tracking-[-0.01em]">{item.name}</span>
           {item.replacedFrom ? (
-            <span className="inline-flex h-[22px] animate-pop items-center rounded-full bg-mata-fraca px-2.5 text-[11px] font-semibold text-mata-texto">
-              Trocado
-            </span>
+            <Selo tom="mata">Trocado</Selo>
           ) : null}
         </div>
         <p className="mt-0.5 text-[13px] text-fumo">{item.amount}</p>

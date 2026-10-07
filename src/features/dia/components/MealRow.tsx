@@ -3,6 +3,7 @@ import { IconeCheck } from "@/components/icons";
 import { kcal } from "@/lib/format";
 import { cascata } from "@/lib/motion";
 import type { RefeicaoDoDia } from "../tipos";
+import { Selo } from "@/components/ui/Selo";
 
 /** Uma refeição na lista da Dieta. Só hoje abre o detalhe (RN23). */
 export function MealRow({ refeicao, indice, clicavel }: { refeicao: RefeicaoDoDia; indice: number; clicavel: boolean }) {
@@ -17,14 +18,13 @@ export function MealRow({ refeicao, indice, clicavel }: { refeicao: RefeicaoDoDi
       </div>
       <p className="mt-1 pl-[54px] text-[13px] leading-snug text-fumo first-letter:uppercase">{refeicao.summary}</p>
       {proxima ? (
-        <span className="mt-2.5 ml-[54px] inline-flex h-[26px] items-center gap-1.5 rounded-full bg-gema-fraca px-2.5">
-          <span className="size-1.5 rounded-full bg-gema" />
-          <span className="text-[11.5px] font-semibold text-gema-texto">Próxima refeição</span>
-        </span>
+        <Selo tom="gema" pulsante className="mt-2.5 ml-[54px]">
+          Próxima refeição
+        </Selo>
       ) : refeicao.note ? (
-        <span className="mt-2.5 ml-[54px] inline-flex h-[26px] items-center rounded-full bg-mata-fraca px-2.5 text-[11.5px] font-semibold text-mata-texto">
+        <Selo tom="mata" className="mt-2.5 ml-[54px]">
           {refeicao.note}
-        </span>
+        </Selo>
       ) : null}
     </>
   );

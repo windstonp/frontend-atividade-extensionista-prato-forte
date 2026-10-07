@@ -14,6 +14,7 @@ import { comoApiError } from "@/lib/api/errors";
 import { useApagarConversa, useConversas, useNovaConversa } from "../hooks";
 import { perguntaDaUrl } from "../regras";
 import { ConversationListItem } from "./ConversationListItem";
+import { Aviso } from "@/components/ui/Aviso";
 
 /** N05 — continuar uma conversa ou começar outra (RF19, RN28). */
 export function ConversasTela() {
@@ -70,9 +71,9 @@ export function ConversasTela() {
         </p>
 
         {pergunta ? (
-          <p className="mt-4 animate-entra rounded-2xl bg-gema-fraca px-4 py-3 text-[13.5px] leading-snug text-gema-texto" style={{ animationDelay: "140ms" }}>
+          <Aviso tom="gema" className="mt-4">
             Sua pergunta: “{pergunta}”. Escolha onde perguntar.
-          </p>
+          </Aviso>
         ) : null}
 
         <Button className="mt-5 animate-entra" carregando={nova.isPending} onClick={() => void comecar(false)} style={{ animationDelay: "180ms" }}>

@@ -16,6 +16,7 @@ import { diasEntre, hojeLocal } from "../regras";
 import { HistoricoPesagens } from "./HistoricoPesagens";
 import { WeightDeltaMessage } from "./WeightDeltaMessage";
 import { WeightStepper } from "./WeightStepper";
+import { Aviso } from "@/components/ui/Aviso";
 
 /** S16 — registrar o peso de hoje (RF23, RN34). */
 export function RegistrarPesoTela() {
@@ -64,9 +65,9 @@ export function RegistrarPesoTela() {
           {dataPorExtenso(hoje)}.
         </p>
         {jaPesouHoje ? (
-          <p className="mt-3 animate-entra rounded-2xl bg-gema-fraca px-4 py-3 text-[13.5px] leading-snug text-gema-texto" style={{ animationDelay: "120ms" }}>
+          <Aviso tom="gema" className="mt-3">
             Você já registrou hoje. Salvar vai atualizar o valor.
-          </p>
+          </Aviso>
         ) : null}
 
         <section className="mt-[22px] animate-escala rounded-[20px] bg-white px-[18px] pt-[22px] pb-[18px]" style={{ animationDelay: "140ms" }}>

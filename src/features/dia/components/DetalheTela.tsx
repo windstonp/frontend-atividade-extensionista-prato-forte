@@ -20,6 +20,7 @@ import { AvisoDeAlteracao } from "./AvisoDeAlteracao";
 import { FoodItemRow } from "./FoodItemRow";
 import { NoPlanState } from "./NoPlanState";
 import { SubstitutionSheet } from "./SubstitutionSheet";
+import { Selo } from "@/components/ui/Selo";
 
 /** S13 — uma refeição de hoje: o que vai no prato, trocas (RF14), desfazer (RF15) e marcar (RF13). */
 export function DetalheTela({ slot }: { slot: string }) {
@@ -117,15 +118,13 @@ export function DetalheTela({ slot }: { slot: string }) {
         rotuloVoltar="Voltar para a dieta"
         direita={
           refeicao.done ? (
-            <span className="inline-flex h-[30px] animate-pop items-center gap-1.5 rounded-full bg-mata-fraca px-3 text-[11.5px] font-semibold text-mata-texto">
-              <IconeCheck size={12} strokeWidth={2.4} />
+            <Selo tom="mata" icone={<IconeCheck size={12} strokeWidth={2.4} />}>
               Refeição feita
-            </span>
+            </Selo>
           ) : refeicao.isNext ? (
-            <span className="inline-flex h-[30px] items-center gap-1.5 rounded-full bg-gema-fraca px-3">
-              <span className="size-1.5 rounded-full bg-gema" />
-              <span className="text-[11.5px] font-semibold text-gema-texto">Próxima refeição</span>
-            </span>
+            <Selo tom="gema" pulsante>
+              Próxima refeição
+            </Selo>
           ) : null
         }
       />

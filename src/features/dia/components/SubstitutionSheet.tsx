@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Link from "next/link";
 import { IconeCheck } from "@/components/icons";
 import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
@@ -10,6 +9,7 @@ import { gramas } from "@/lib/format";
 import { cascata } from "@/lib/motion";
 import { juntarComE } from "../regras";
 import type { ItemDoDia, Substituicoes } from "../tipos";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 const delta = (n: number) => `${n > 0 ? "+" : n < 0 ? "−" : ""}${Math.abs(Math.round(n))} kcal`;
 
@@ -58,17 +58,15 @@ export function SubstitutionSheet({
           </Button>
         </div>
       ) : substituicoes.options.length === 0 ? (
-        <div className="mt-4">
-          <p className="text-sm leading-normal text-fumo">
-            Ainda não temos trocas cadastradas para este alimento. O Nutri consegue sugerir uma a partir do que você tem em casa.
-          </p>
-          <Link
-            href={`/nutri?pergunta=${encodeURIComponent(`Não tenho ${item.name.toLowerCase()} em casa. O que uso no lugar?`)}`}
-            className="mt-4 flex h-[54px] items-center justify-center rounded-full bg-gema text-base font-semibold text-tinta"
-          >
-            Perguntar ao Nutri
-          </Link>
-        </div>
+        <EmptyState
+          className="mt-2 px-0 py-0"
+          titulo="Sem trocas para este alimento"
+          descricao="Ainda não temos trocas cadastradas para este alimento. O Nutri consegue sugerir uma a partir do que você tem em casa."
+          acao={{
+            rotulo: "Perguntar ao Nutri",
+            href: `/nutri?pergunta=${encodeURIComponent(`Não tenho ${item.name.toLowerCase()} em casa. O que uso no lugar?`)}`,
+          }}
+        />
       ) : (
         <Opcoes key={item.id} substituicoes={substituicoes} trocando={trocando} aoTrocar={aoTrocar} aoFechar={aoFechar} />
       )}
