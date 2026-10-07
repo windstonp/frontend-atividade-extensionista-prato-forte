@@ -58,6 +58,18 @@ export const Pular: Story = {
   },
 };
 
+export const PularLimpaOCampo: Story = {
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await userEvent.click(c.getByRole('button', { name: 'Resposta não ajudou' }));
+    await userEvent.type(c.getByLabelText('O que não ajudou?'), 'rascunho');
+    await userEvent.click(c.getByRole('button', { name: 'Pular' }));
+    await userEvent.click(c.getByRole('button', { name: 'Resposta útil' }));
+    await userEvent.click(c.getByRole('button', { name: 'Resposta não ajudou' }));
+    await expect(c.getByLabelText('O que não ajudou?')).toHaveValue('');
+  },
+};
+
 export const Plano: Story = {
   args: { variante: 'plano' },
   play: async ({ canvasElement }) => {

@@ -41,6 +41,11 @@ export function RatingButtons({
   const idCampo = useId();
   const rotulos = ROTULOS[variante];
 
+  function fechar() {
+    setComentando(false);
+    setTexto(""); // a próxima vez começa em branco
+  }
+
   function marcar(v: ValorAvaliacao) {
     setComentando(v === "down" && valor?.value !== "down");
     aoMarcar(v);
@@ -82,7 +87,7 @@ export function RatingButtons({
             className="mt-1.5 w-full resize-none rounded-xl border border-linha px-3 py-2 text-[14px] focus:border-tinta focus:outline-none"
           />
           <div className="mt-2 flex justify-end gap-2">
-            <button type="button" onClick={() => setComentando(false)} className="h-9 rounded-full px-3.5 text-[13px] font-semibold text-fumo">
+            <button type="button" onClick={fechar} className="h-9 rounded-full px-3.5 text-[13px] font-semibold text-fumo">
               Pular
             </button>
             <button
@@ -90,7 +95,7 @@ export function RatingButtons({
               disabled={texto.trim() === ""}
               onClick={() => {
                 aoComentar(texto);
-                setComentando(false);
+                fechar();
               }}
               className="h-9 rounded-full bg-tinta px-4 text-[13px] font-semibold text-neve disabled:opacity-40"
             >
