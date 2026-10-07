@@ -25,7 +25,7 @@ export function PlanGenerating({
   aoTentarDeNovo: () => void;
 }) {
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-[430px] flex-col justify-between bg-tinta px-8 pt-13 pb-10 text-neve area-segura-cima area-segura-baixo">
+    <div className="mx-auto flex min-h-dvh w-full max-w-[430px] flex-col justify-between bg-tinta px-8 pt-seguro-13 pb-seguro-10 text-neve">
       <div className="flex items-center gap-2.5">
         <MarcaNutri size={18} />
         <span className="font-display text-[17px] font-bold tracking-[-0.015em]">Prato Forte</span>

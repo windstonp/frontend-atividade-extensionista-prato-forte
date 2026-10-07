@@ -24,14 +24,13 @@ export function AuthScreen({
       <TopBar
         voltarPara={voltarPara}
         rotuloVoltar={rotuloVoltar}
-        className="area-segura-cima"
         direita={
           <span aria-hidden="true" className="animate-flutua text-tinta">
             <MarcaNutri size={18} />
           </span>
         }
       />
-      <main className="flex flex-1 flex-col px-6 pt-4 pb-8 area-segura-baixo">
+      <main className="flex flex-1 flex-col px-6 pt-4 pb-seguro-8">
         {/* Palavra por palavra; os espaços ficam fora dos spans para o nome acessível continuar inteiro. */}
         <h1 className="font-display text-[30px] leading-[1.08] font-bold tracking-[-0.028em]">
           {palavras.map((palavra, i) => (

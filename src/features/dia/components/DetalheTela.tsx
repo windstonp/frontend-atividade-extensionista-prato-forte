@@ -172,7 +172,7 @@ export function DetalheTela({ slot }: { slot: string }) {
         </ul>
       </main>
 
-      <footer className="flex shrink-0 animate-entra flex-col gap-2.5 px-5 pt-3.5 pb-7 area-segura-baixo" style={{ animationDelay: "560ms" }}>
+      <footer className="flex shrink-0 animate-entra flex-col gap-2.5 px-5 pt-3.5 pb-seguro-7" style={{ animationDelay: "560ms" }}>
         {proteico ? (
           <NutriBar
             href={`/nutri?pergunta=${encodeURIComponent(`Não tenho ${proteico.name.toLowerCase()} em casa. O que uso no lugar?`)}`}

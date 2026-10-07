@@ -42,7 +42,8 @@ export default function RootLayout({
       lang="pt-BR"
       className={`${bricolage.variable} ${instrument.variable} h-full`}
     >
-      <body className="min-h-dvh bg-papel">
+      {/* Extensões do navegador (ColorZilla, Grammarly...) escrevem atributos no body antes da hidratação. */}
+      <body className="min-h-dvh bg-papel" suppressHydrationWarning>
         <Providers>{children}</Providers>
       </body>
     </html>

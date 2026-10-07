@@ -5,7 +5,7 @@ import { iniciais } from "../formato";
 /** Cabeçalho do perfil: iniciais, nome, desde quando e o atalho para configurações. */
 export function ProfileHeader({ nome, desde }: { nome: string; desde: string }) {
   return (
-    <header className="flex shrink-0 items-center gap-3.5 px-5 pt-[22px] pb-3.5 area-segura-cima">
+    <header className="flex shrink-0 items-center gap-3.5 px-5 pt-seguro-[22px] pb-3.5">
       <span
         aria-hidden="true"
         className="flex size-[58px] shrink-0 animate-pop items-center justify-center rounded-full bg-tinta text-[19px] font-semibold text-neve"

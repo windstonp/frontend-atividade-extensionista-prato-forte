@@ -64,7 +64,7 @@ export function OnboardingStep({
   return (
     <Screen>
       <form noValidate onSubmit={enviar} className="flex flex-1 flex-col">
-        <header className="shrink-0 px-6 pt-[22px] area-segura-cima">
+        <header className="shrink-0 px-6 pt-seguro-[22px]">
           <div className="flex h-10 items-center justify-between">
             {voltarPara ? (
               <Link
@@ -125,7 +125,7 @@ export function OnboardingStep({
           </div>
         </main>
 
-        <footer className="shrink-0 animate-entra px-6 pt-3.5 pb-7 area-segura-baixo" style={{ animationDelay: "260ms" }}>
+        <footer className="shrink-0 animate-entra px-6 pt-3.5 pb-seguro-7" style={{ animationDelay: "260ms" }}>
           {bloqueado ? null : acimaDoBotao}
           <FormError erro={erroAoSalvar} />
           <Button type="submit" carregando={salvando} rotuloCarregando={rotuloSalvando} disabled={bloqueado || !podeContinuar}>

@@ -60,13 +60,16 @@
   }
 }
 
-@layer utilities {
-  .area-segura-baixo {
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-  }
-  .area-segura-cima {
-    padding-top: env(safe-area-inset-top, 0px);
-  }
+/* Área segura (notch, barra de status, indicador de início) SOMADA ao
+   respiro da tela: pt-seguro-5 = 1.25rem + env(safe-area-inset-top).
+   Não use pt-* junto com área segura: na mesma camada um apaga o outro. */
+@utility pt-seguro-* {
+  padding-top: calc(var(--spacing) * --value(number) + env(safe-area-inset-top, 0px));
+  padding-top: calc(--value([length]) + env(safe-area-inset-top, 0px));
+}
+@utility pb-seguro-* {
+  padding-bottom: calc(var(--spacing) * --value(number) + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(--value([length]) + env(safe-area-inset-bottom, 0px));
 }
 
 

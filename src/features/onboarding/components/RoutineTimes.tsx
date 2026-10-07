@@ -42,7 +42,7 @@ export function RoutineTimes({
                 aria-invalid={mensagem ? true : undefined}
                 aria-describedby={mensagem ? `${id}-mensagem` : undefined}
                 onChange={(e) => aoMudar(campo, e.target.value)}
-                className={`h-12 w-[110px] rounded-xl border bg-white text-center font-display text-[19px] font-semibold tracking-[-0.01em] focus:outline-none ${
+                className={`h-12 w-auto min-w-[110px] rounded-xl border bg-white px-3 text-center font-display text-[19px] font-semibold tracking-[-0.01em] focus:outline-none ${
                   mensagem ? "border-alerta" : "border-linha focus:border-tinta focus:shadow-[inset_0_0_0_1px_var(--color-tinta)]"
                 }`}
               />

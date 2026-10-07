@@ -27,7 +27,7 @@ export function PerfilTela() {
   if (perfil.error || catalogo.error) {
     return (
       <Screen>
-        <main className="flex-1 pt-6">
+        <main className="flex-1 pt-seguro-6">
           <ErrorState
             titulo="Não foi possível carregar seu perfil"
             descricao="Confira a internet e tente de novo."
@@ -45,7 +45,7 @@ export function PerfilTela() {
   if (!perfil.data || !catalogo.data) {
     return (
       <Screen>
-        <main className="flex-1 px-5 pt-6" aria-busy="true" aria-label="Carregando seu perfil">
+        <main className="flex-1 px-5 pt-seguro-6" aria-busy="true" aria-label="Carregando seu perfil">
           <Skeleton className="h-16" />
           <Skeleton className="mt-4 h-[200px] rounded-3xl" atraso={90} />
           <Skeleton className="mt-4 h-[320px] rounded-3xl" atraso={180} />

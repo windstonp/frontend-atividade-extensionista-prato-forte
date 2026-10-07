@@ -119,7 +119,7 @@ export function ConfiguracoesTela() {
         </div>
       </main>
 
-      <div className="h-8 shrink-0 area-segura-baixo" />
+      <div className="shrink-0 pb-seguro-8" />
     </Screen>
   );
 }

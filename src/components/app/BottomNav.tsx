@@ -22,7 +22,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Navegação principal"
-      className="sticky bottom-0 z-30 flex shrink-0 border-t border-linha bg-white/92 px-1 pt-[7px] pb-4 backdrop-blur-lg area-segura-baixo"
+      className="sticky bottom-0 z-30 flex shrink-0 border-t border-linha bg-white/92 px-1 pt-[7px] pb-seguro-4 backdrop-blur-lg"
     >
       {ABAS.map(({ href, rotulo, Icone }) => {
         const ativo = caminho === href || caminho.startsWith(`${href}/`);

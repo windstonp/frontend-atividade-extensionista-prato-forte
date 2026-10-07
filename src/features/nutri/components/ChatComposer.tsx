@@ -21,7 +21,7 @@ export function ChatComposer({
         e.preventDefault();
         if (!vazio && !enviando) aoEnviar();
       }}
-      className="shrink-0 border-t border-linha px-4 pt-3 pb-5 area-segura-baixo"
+      className="shrink-0 border-t border-linha px-4 pt-3 pb-seguro-5"
     >
       {valor.length > 900 ? (
         <p className="mb-1.5 text-right text-xs text-fumo" aria-live="polite">

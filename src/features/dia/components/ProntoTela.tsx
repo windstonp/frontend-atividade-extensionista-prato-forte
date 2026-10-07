@@ -31,7 +31,7 @@ export function ProntoTela() {
   if (plano.isError) {
     return (
       <Screen>
-        <main className="flex-1 px-6 pt-16">
+        <main className="flex-1 px-6 pt-seguro-16">
           <ErrorState
             titulo="Não foi possível abrir seu plano"
             descricao="Ele está salvo. Foi a conexão que falhou agora."
@@ -45,7 +45,7 @@ export function ProntoTela() {
   if (status !== "ready" || !plano.data?.meals || !plano.data.targets) {
     return (
       <Screen>
-        <main className="flex-1 px-6 pt-16">
+        <main className="flex-1 px-6 pt-seguro-16">
           <Skeleton className="size-11 rounded-full" />
           <Skeleton className="mt-6 h-20" />
           <Skeleton className="mt-6 h-[320px] rounded-[20px]" />
@@ -58,7 +58,7 @@ export function ProntoTela() {
 
   return (
     <Screen>
-      <main className="flex-1 px-6 pt-16 area-segura-cima">
+      <main className="flex-1 px-6 pt-seguro-16">
         <span className="relative flex size-11 items-center justify-center rounded-full bg-mata text-white">
           <span className="absolute inset-0 animate-halo rounded-full bg-mata" />
           <span className="relative flex animate-pop items-center justify-center">
@@ -88,7 +88,7 @@ export function ProntoTela() {
         </p>
       </main>
 
-      <footer className="flex shrink-0 animate-entra flex-col gap-3 px-6 pt-3.5 pb-8 area-segura-baixo" style={{ animationDelay: "1000ms" }}>
+      <footer className="flex shrink-0 animate-entra flex-col gap-3 px-6 pt-3.5 pb-seguro-8" style={{ animationDelay: "1000ms" }}>
         <ButtonLink href="/hoje">Ver o dia de hoje</ButtonLink>
         <ButtonLink href="/nutri" variante="texto" className="h-11">
           Ajustar alguma coisa com o Nutri

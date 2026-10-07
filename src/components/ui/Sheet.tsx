@@ -108,7 +108,7 @@ export function Sheet({
         aria-labelledby={idTitulo}
         aria-describedby={descricao ? idDescricao : undefined}
         tabIndex={-1}
-        className={`relative max-h-[86dvh] overflow-y-auto rounded-t-[26px] bg-white px-5 pt-2.5 pb-7 shadow-[0_-1px_2px_rgba(21,37,28,.06),0_-18px_44px_-14px_rgba(21,37,28,.38)] outline-none area-segura-baixo ${
+        className={`relative max-h-[86dvh] overflow-y-auto rounded-t-[26px] bg-white px-5 pt-2.5 pb-seguro-7 shadow-[0_-1px_2px_rgba(21,37,28,.06),0_-18px_44px_-14px_rgba(21,37,28,.38)] outline-none ${
           saindo ? "translate-y-full transition-transform duration-240 ease-in" : "animate-folha"
         }`}
       >

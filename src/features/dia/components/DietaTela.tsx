@@ -29,7 +29,7 @@ export function DietaTela() {
 
   return (
     <Screen>
-      <header className="shrink-0 px-5 pt-5 pb-3.5 area-segura-cima">
+      <header className="shrink-0 px-5 pt-seguro-5 pb-3.5">
         <div className="flex items-center justify-between">
           <h1 className="animate-entra font-display text-[26px] font-bold tracking-[-0.025em]">Sua dieta</h1>
           <Link

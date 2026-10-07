@@ -224,7 +224,7 @@ function FormPreferencias({ perfil, catalogo }: { perfil: Perfil; catalogo: Cata
         <p className="mt-5 text-[12.5px] leading-normal text-fumo">Alergias nunca aparecem, nem em substituições.</p>
       </main>
 
-      <footer className="shrink-0 px-5 pt-3.5 pb-7 area-segura-baixo">
+      <footer className="shrink-0 px-5 pt-3.5 pb-seguro-7">
         <FormError erro={erro} />
         <Button carregando={salvar.isPending} rotuloCarregando="Salvando…" disabled={!mudou} onClick={() => void enviar()}>
           Salvar alterações

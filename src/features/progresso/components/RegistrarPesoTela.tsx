@@ -87,7 +87,7 @@ export function RegistrarPesoTela() {
         ) : null}
       </main>
 
-      <footer className="flex shrink-0 animate-entra flex-col gap-2.5 px-5 pt-3.5 pb-7 area-segura-baixo" style={{ animationDelay: "520ms" }}>
+      <footer className="flex shrink-0 animate-entra flex-col gap-2.5 px-5 pt-3.5 pb-seguro-7" style={{ animationDelay: "520ms" }}>
         <Button onClick={salvar} carregando={registrar.isPending} rotuloCarregando="Salvando">
           Salvar peso de hoje
         </Button>

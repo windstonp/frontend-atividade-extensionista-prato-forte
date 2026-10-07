@@ -13,7 +13,7 @@ const HORARIOS = [
 
 export default function BoasVindas() {
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-[430px] flex-col justify-between bg-tinta px-7 pt-13 pb-9 text-neve area-segura-cima area-segura-baixo">
+    <div className="mx-auto flex min-h-dvh w-full max-w-[430px] flex-col justify-between bg-tinta px-7 pt-seguro-13 pb-seguro-9 text-neve">
       <div className="flex animate-entra items-center gap-2.5">
         <span className="animate-flutua">
           <MarcaNutri size={18} />

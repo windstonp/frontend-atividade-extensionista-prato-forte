@@ -21,7 +21,7 @@ export function Toaster({ children }: { children: React.ReactNode }) {
     <Contexto.Provider value={mostrar}>
       {children}
       {atual ? (
-        <div className="pointer-events-none fixed inset-x-0 top-0 z-[60] mx-auto max-w-[430px] pt-4 area-segura-cima">
+        <div className="pointer-events-none fixed inset-x-0 top-0 z-[60] mx-auto max-w-[430px] pt-seguro-4">
           <div className="pointer-events-auto">
             <Toast
               key={atual.id}

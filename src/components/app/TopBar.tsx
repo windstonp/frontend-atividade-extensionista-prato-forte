@@ -14,7 +14,7 @@ export function TopBar({
 }) {
   return (
     <header
-      className={`flex h-15 shrink-0 items-center justify-between px-5 pt-5 ${className}`}
+      className={`flex shrink-0 items-center justify-between px-5 pt-seguro-5 ${className}`}
     >
       <Link
         href={voltarPara}
