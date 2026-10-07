@@ -1,21 +1,20 @@
 "use client";
 
 import { useStatusUsabilidade } from "@/features/validacao/hooks";
-import Link from "next/link";
 import { BottomNav } from "@/components/app/BottomNav";
 import { ErrorState } from "@/components/app/ErrorState";
 import { Screen } from "@/components/app/Screen";
-import { IconeAjustes, IconeAvancar } from "@/components/icons";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useCatalogo } from "@/features/onboarding/hooks";
 import { DIAS_CURTOS } from "@/lib/labels";
-import { cascata } from "@/lib/motion";
 import { useMedidas } from "@/lib/useMedidas";
-import { desdeQuando, iniciais } from "../formato";
+import { desdeQuando } from "../formato";
 import { usePerfil } from "../hooks";
 import type { Perfil } from "../tipos";
 import type { Catalogo } from "@/features/onboarding/tipos";
 import { GoalCard } from "./GoalCard";
+import { ProfileHeader } from "./ProfileHeader";
+import { type ItemDoPerfil, ProfileMenu } from "./ProfileMenu";
 import { RefazerPlano } from "./RefazerPlano";
 import { useConfiguracoes } from "@/features/configuracoes/hooks";
 import { resumoDosAvisos } from "@/features/configuracoes/regras";
@@ -70,7 +69,7 @@ function Conteudo({ perfil, catalogo }: { perfil: Perfil; catalogo: Catalogo }) 
   const dias = perfil.trainingDays.map((d) => DIAS_CURTOS[d]).join(", ") || "sem dias marcados";
   const cozinha = perfil.pantryItems.length;
 
-  const itens = [
+  const itens: ItemDoPerfil[] = [
     { href: "/onboarding/dados?editar=1", titulo: "Dados pessoais", valor: `${perfil.age} anos, ${m.altura(perfil.heightCm)}, ${m.peso(perfil.currentWeightKg)}` },
     { href: "/perfil/preferencias", titulo: "Preferências alimentares", valor: `${cozinha} ${cozinha === 1 ? "alimento" : "alimentos"} na sua cozinha` },
     { href: "/perfil/preferencias", titulo: "Restrições e alergias", valor: restricao, alerta: Boolean(alergia) },
@@ -87,26 +86,7 @@ function Conteudo({ perfil, catalogo }: { perfil: Perfil; catalogo: Catalogo }) 
 
   return (
     <Screen>
-      <header className="flex shrink-0 items-center gap-3.5 px-5 pt-[22px] pb-3.5 area-segura-cima">
-        <span
-          aria-hidden="true"
-          className="flex size-[58px] shrink-0 animate-pop items-center justify-center rounded-full bg-tinta text-[19px] font-semibold text-neve"
-        >
-          {iniciais(perfil.name)}
-        </span>
-        <div className="flex-1 animate-entra" style={{ animationDelay: "90ms" }}>
-          <h1 className="font-display text-[22px] font-bold tracking-[-0.02em]">{perfil.name}</h1>
-          <p className="mt-0.5 text-[13px] text-fumo">No Prato Forte desde {desdeQuando(perfil.createdAt)}</p>
-        </div>
-        <Link
-          href="/perfil/configuracoes"
-          aria-label="Abrir configurações"
-          className="group flex size-[42px] shrink-0 animate-entra items-center justify-center rounded-full border border-linha bg-white transition-[border-color] duration-250 hover:border-pedra"
-          style={{ animationDelay: "160ms" }}
-        >
-          <IconeAjustes size={20} className="transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] group-hover:rotate-90" />
-        </Link>
-      </header>
+      <ProfileHeader nome={perfil.name} desde={desdeQuando(perfil.createdAt)} />
 
       <main className="flex-1 px-5">
         <GoalCard
@@ -122,36 +102,7 @@ function Conteudo({ perfil, catalogo }: { perfil: Perfil; catalogo: Catalogo }) 
           cidade={perfil.city}
         />
 
-        <nav aria-label="Seu perfil" className="mt-4 rounded-[20px] bg-white px-[18px]">
-          {itens.map((item, i) => {
-            const classe = `group flex min-h-15 animate-entra items-center gap-3.5 py-3 transition-colors duration-200 ${
-              "desabilitado" in item && item.desabilitado ? "" : "hover:text-mata"
-            } ${i < itens.length - 1 ? "border-b border-fio" : ""}`;
-            const conteudo = (
-              <span className="flex-1">
-                <span className="block text-[15px] font-semibold">{item.titulo}</span>
-                <span className={`mt-0.5 block text-[13px] ${"alerta" in item && item.alerta ? "text-alerta" : "text-fumo"}`}>{item.valor}</span>
-              </span>
-            );
-            // Já respondeu o questionário nesta rodada: o item agradece e não leva a lugar nenhum (CA06).
-            if ("desabilitado" in item && item.desabilitado) {
-              return (
-                <div key={item.titulo} style={cascata(i, 60, 320)} className={classe}>
-                  {conteudo}
-                </div>
-              );
-            }
-            return (
-              <Link key={item.titulo} href={item.href} style={cascata(i, 60, 320)} className={classe}>
-                {conteudo}
-                <IconeAvancar
-                  size={18}
-                  className="shrink-0 text-fumo transition-[color,transform] duration-250 group-hover:translate-x-1 group-hover:text-tinta"
-                />
-              </Link>
-            );
-          })}
-        </nav>
+        <ProfileMenu itens={itens} />
 
         <RefazerPlano />
       </main>
