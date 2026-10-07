@@ -1,6 +1,8 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { http, HttpResponse } from 'msw';
+import { Toaster } from '@/components/ui/Toaster';
 import { describe, expect, it, vi } from 'vitest';
 import { alimentosApi, leiteComLactose } from '@/mocks/fixtures/alimentos';
 import { diaApi } from '@/mocks/fixtures/dia';
@@ -113,5 +115,23 @@ describe('Adicionar alimento (S13a)', () => {
     await u.type(campo, '150,5');
     await u.click(within(folha).getByRole('button', { name: 'Salvar' }));
     expect(patch).toEqual({ amount: 150.5 });
+  });
+
+  it('editar outro registro mostra a quantidade dele, não a do anterior (revisão final)', async () => {
+    const dia = camelizar<Dia>(diaApi({ feitas: ['cafe'] }));
+    const [a, b] = dia.meals[0].entries;
+    const cliente = novoClienteDeTeste();
+    cliente.setQueryData(CHAVES.dia('today'), dia);
+    const { rerender } = renderizar(<AddFoodSheet aberta modo={{ tipo: 'editar', registro: a }} slot="cafe" dataChave="today" aoFechar={() => {}} />, cliente);
+    expect(await screen.findByRole('textbox', { name: 'Quantidade' })).toHaveValue(String(a.amount));
+
+    rerender(
+      <QueryClientProvider client={cliente}>
+        <Toaster>
+          <AddFoodSheet aberta modo={{ tipo: 'editar', registro: b }} slot="cafe" dataChave="today" aoFechar={() => {}} />
+        </Toaster>
+      </QueryClientProvider>,
+    );
+    expect(await screen.findByRole('textbox', { name: 'Quantidade' })).toHaveValue(String(b.amount));
   });
 });

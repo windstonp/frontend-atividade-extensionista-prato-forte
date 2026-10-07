@@ -58,7 +58,7 @@ export function AddFoodSheet({ aberta, modo, slot, dataChave, aoFechar }: {
     const r = modo.registro;
     titulo = "Editar registro";
     conteudo = (
-      <AmountStep nome={r.name} medida={r.measure} per100={per100DoRegistro(r)} atalhos={[]} conflitos={r.conflicts} inicial={r.amount} modo="editar"
+      <AmountStep key={`registro-${r.id}`} nome={r.name} medida={r.measure} per100={per100DoRegistro(r)} atalhos={[]} conflitos={r.conflicts} inicial={r.amount} modo="editar"
         salvando={editar.isPending}
         aoConfirmar={(amount) => editar.mutate({ id: r.id, amount }, { onSuccess: fechar })}
         aoRemover={() => remover.mutate({ registro: r, slot }, { onSuccess: fechar })} />
@@ -66,7 +66,7 @@ export function AddFoodSheet({ aberta, modo, slot, dataChave, aoFechar }: {
   } else if (passo.tipo === "quantidade") {
     const a = passo.alimento;
     conteudo = (
-      <AmountStep nome={a.name} medida={a.measure} per100={a.per100} atalhos={atalhosDeQuantidade(a)} conflitos={a.conflicts} modo="adicionar"
+      <AmountStep key={`${a.kind}-${a.id}`} nome={a.name} medida={a.measure} per100={a.per100} atalhos={atalhosDeQuantidade(a)} conflitos={a.conflicts} modo="adicionar"
         salvando={registrar.isPending}
         aoConfirmar={(amount) => registrar.mutate({ slot, entries: [a.kind === "custom" ? { customFoodId: a.id, amount } : { foodId: a.id, amount }] }, { onSuccess: fechar })}
         aoVoltar={() => setPasso({ tipo: "buscar" })}
@@ -76,6 +76,7 @@ export function AddFoodSheet({ aberta, modo, slot, dataChave, aoFechar }: {
     const a = passo.alimento;
     conteudo = (
       <CustomFoodForm
+        key={a ? `proprio-${a.id}` : "novo"}
         inicial={a ? { id: a.id, name: a.name, measure: a.measure, per100: a.per100 } : { name: termo.trim() }}
         salvando={criar.isPending || editarProprio.isPending} erros={erros}
         aoSalvar={(d) => void salvarProprio(d, a)}
