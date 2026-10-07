@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ErrorState } from "@/components/app/ErrorState";
 import { Screen } from "@/components/app/Screen";
 import { TopBar } from "@/components/app/TopBar";
@@ -42,6 +42,7 @@ function useOnline() {
 
 /** S14 — o chat (RF20, RF21). */
 export function ChatTela({ id }: { id: number }) {
+  const router = useRouter();
   const avisar = useToast();
   const online = useOnline();
   const conversa = useConversa(id);
@@ -83,6 +84,8 @@ export function ChatTela({ id }: { id: number }) {
     const pergunta = texto.trim();
     if (!pergunta || perguntar.isPending) return;
     setRascunho("");
+    // A pergunta vinda de outra tela já foi usada: sai do endereço para não voltar ao campo.
+    if (busca.has("pergunta")) router.replace(`/nutri/${id}`, { scroll: false });
     const local: Pendente = { id: `p-${++sequencia.current}`, content: pergunta, status: "enviando" };
     if (!navigator.onLine) {
       setPendente({ ...local, status: "falhou" });
@@ -174,7 +177,7 @@ export function ChatTela({ id }: { id: number }) {
         <p className="sr-only" aria-live="polite">
           {anuncio}
         </p>
-        {offline ? <OfflineNotice /> : null}
+        {offline ? <OfflineNotice perguntaPresa={pendente?.status === "falhou"} /> : null}
 
         {mensagens.isError ? (
           <ErrorState

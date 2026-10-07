@@ -92,6 +92,9 @@ export function useResolverAcao(conversaId: number) {
       );
       if (confirmation) acrescentar(cliente, conversaId, [confirmation]);
       if (day) cliente.setQueryData<Dia>(CHAVES.dia('today'), day);
+      // A prévia da conversa e o contexto (próxima refeição, o que já comeu) mudaram.
+      void cliente.invalidateQueries({ queryKey: CHAVES.conversas });
+      void cliente.invalidateQueries({ queryKey: CHAVES.contextoNutri });
     },
     onError: () => void cliente.invalidateQueries({ queryKey: CHAVES.mensagens(conversaId) }),
   });

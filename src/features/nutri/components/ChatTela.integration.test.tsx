@@ -7,7 +7,7 @@ import { conversaApi, mensagemUsuarioApi, respostaTrocaApi } from '@/mocks/fixtu
 import { erroDaApi, url } from '@/mocks/handlers/auth';
 import { respondendoMensagens } from '@/mocks/handlers/nutri';
 import { server } from '@/mocks/server';
-import { definirUrl, redefinirNavegacao } from '@/test/next-navigation';
+import { definirUrl, redefinirNavegacao, roteador } from '@/test/next-navigation';
 import { renderizar } from '@/test/renderizar';
 import { ChatTela } from './ChatTela';
 
@@ -45,6 +45,18 @@ describe('Chat do Nutri (S14)', () => {
 
     expect(await screen.findByLabelText('Escreva sua pergunta para o Nutri')).toHaveValue('Não tenho frango em casa');
     expect(enviou).toBe(false);
+  });
+
+  it('depois do primeiro envio, a pergunta sai do endereço (voltar não a repõe no campo)', async () => {
+    definirUrl(`/nutri/5?pergunta=${encodeURIComponent('Não tenho frango em casa')}`);
+    server.use(conversa(5, true), respondendoMensagens(5, []), respondendoPergunta());
+    const usuario = userEvent.setup();
+
+    renderizar(<ChatTela id={5} />);
+    await screen.findByDisplayValue('Não tenho frango em casa');
+    await usuario.click(screen.getByRole('button', { name: 'Enviar pergunta' }));
+
+    await waitFor(() => expect(roteador.replace).toHaveBeenCalledWith('/nutri/5', { scroll: false }));
   });
 
   it('pergunta, mostra a resposta com cartão e chips; tocar num chip envia (RF20, CA13)', async () => {

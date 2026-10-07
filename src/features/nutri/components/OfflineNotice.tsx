@@ -3,11 +3,11 @@ import { IconeSemConexao } from "@/components/icons";
 import { Aviso } from "@/components/ui/Aviso";
 
 /** Sem internet: o plano continua acessível. */
-export function OfflineNotice() {
+export function OfflineNotice({ perguntaPresa }: { perguntaPresa: boolean }) {
   return (
     <Aviso
       tom="alerta"
-      titulo="Sua pergunta não saiu daqui"
+      titulo={perguntaPresa ? "Sua pergunta não saiu daqui" : "Você está sem internet"}
       icone={<IconeSemConexao size={20} className="mt-0.5 shrink-0 text-alerta" />}
       className="mb-4"
     >

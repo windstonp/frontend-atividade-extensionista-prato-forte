@@ -1,16 +1,19 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { delay, http, HttpResponse } from 'msw';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { Toaster } from '@/components/ui/Toaster';
 import { conversaApi } from '@/mocks/fixtures/nutri';
 import { url } from '@/mocks/handlers/auth';
 import { server } from '@/mocks/server';
 import { novoClienteDeTeste } from '@/test/renderizar';
-import { useApagarConversa, useConversas, useNovaConversa } from './hooks';
+import { CHAVES } from '@/lib/chaves';
+import { camelizar } from '@/lib/api/case';
+import { respostaTrocaApi } from '@/mocks/fixtures/nutri';
+import type { MensagemNutri } from './tipos';
+import { useApagarConversa, useConversas, useNovaConversa, useResolverAcao } from './hooks';
 
-function comCliente() {
-  const cliente = novoClienteDeTeste();
+function comCliente(cliente = novoClienteDeTeste()) {
   const wrapper = ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={cliente}>
       <Toaster>{children}</Toaster>
@@ -68,5 +71,17 @@ describe('hooks do Nutri', () => {
     await waitFor(() => expect(result.current.lista.data!.pages[0].data.map((c) => c.id)).toEqual([2]));
     await waitFor(() => expect(result.current.apagar.isError).toBe(true));
     await waitFor(() => expect(result.current.lista.data!.pages[0].data.map((c) => c.id)).toEqual([3, 2]));
+  });
+
+  it('aplicar uma ação atualiza a lista de conversas e o contexto do Nutri', async () => {
+    server.use(http.post(url('/messages/12/actions/0'), () => HttpResponse.json({ data: { message: { id: 12 } } })));
+    const cliente = novoClienteDeTeste();
+    const invalidar = vi.spyOn(cliente, 'invalidateQueries');
+    const { result } = renderHook(() => useResolverAcao(5), comCliente(cliente));
+
+    await act(() => result.current.mutateAsync({ mensagem: camelizar<MensagemNutri>(respostaTrocaApi(12)), indice: 0 }));
+
+    expect(invalidar).toHaveBeenCalledWith({ queryKey: CHAVES.conversas });
+    expect(invalidar).toHaveBeenCalledWith({ queryKey: CHAVES.contextoNutri });
   });
 });
