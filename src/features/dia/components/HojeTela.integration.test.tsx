@@ -62,6 +62,21 @@ describe('Hoje (S11)', () => {
     await vi.waitFor(() => expect(desfez).toBe(true));
   });
 
+  it('aviso fechado não volta depois de recarregar a página (F5)', async () => {
+    server.use(respondendoDia(diaApi({ ultimaAlteracao: { id: 31, text: 'Melancia trocada por abacate' } })));
+
+    const { unmount } = renderizar(<HojeTela />);
+    await userEvent.setup().click(await screen.findByRole('button', { name: 'Fechar aviso' }));
+    await vi.waitFor(() => expect(screen.queryByText('Melancia trocada por abacate')).toBeNull());
+    unmount();
+
+    vi.resetModules(); // F5: a memória da página recomeça; só o que está no navegador fica
+    const { HojeTela: HojeDepoisDoF5 } = await import('./HojeTela');
+    renderizar(<HojeDepoisDoF5 />);
+    await screen.findByText(/de 5 refeições/);
+    expect(screen.queryByText('Melancia trocada por abacate')).toBeNull();
+  });
+
   it.each([
     ['generating', 'Seu plano está quase pronto'],
     ['failed', 'Não conseguimos montar seu plano'],
