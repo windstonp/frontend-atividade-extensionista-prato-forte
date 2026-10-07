@@ -10,9 +10,8 @@ import { ButtonLink } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useMe } from "@/features/auth/hooks";
 import { useDadosOnboarding } from "@/features/onboarding/hooks";
-import { kcal } from "@/lib/format";
-import { cascata } from "@/lib/motion";
 import { usePlano } from "../hooks";
+import { PlanReadySummary } from "./PlanReadySummary";
 
 /** S10 — o plano que acabou de ficar pronto, como "um dia comum". */
 export function ProntoTela() {
@@ -77,34 +76,7 @@ export function ProntoTela() {
           Cinco refeições montadas com o que você marcou, encaixadas entre o trabalho e o treino das {treino}.
         </p>
 
-        <section className="mt-[22px] animate-escala rounded-[20px] bg-white px-[18px] pt-1.5 pb-3.5" style={{ animationDelay: "340ms" }}>
-          <div className="flex items-baseline justify-between py-3.5">
-            <h2 className="font-display text-[15px] font-semibold">Um dia comum</h2>
-            <span className="text-[12.5px] text-fumo">{kcal(targets.kcal)}</span>
-          </div>
-          {meals.map((meal, i) => (
-            <div
-              key={meal.slot}
-              style={cascata(i, 70, 460)}
-              className={`flex min-h-[52px] animate-entra-lado-esq items-center gap-3 ${i < meals.length - 1 ? "border-b border-fio" : ""}`}
-            >
-              <span className="w-[46px] text-[12.5px] text-fumo">{meal.time}</span>
-              <span className="flex-1 text-[14.5px] font-medium">{meal.name}</span>
-              <span className="text-[12.5px] text-fumo">{kcal(meal.calories)}</span>
-            </div>
-          ))}
-          <div className="mt-1 flex animate-entra gap-[18px] border-t border-tinta pt-3.5" style={{ animationDelay: "840ms" }}>
-            <span className="text-[13px] font-semibold">
-              {targets.proteinG} g <span className="font-medium text-fumo">proteína</span>
-            </span>
-            <span className="text-[13px] font-semibold">
-              {targets.carbsG} g <span className="font-medium text-fumo">carboidrato</span>
-            </span>
-            <span className="text-[13px] font-semibold">
-              {targets.fatG} g <span className="font-medium text-fumo">gordura</span>
-            </span>
-          </div>
-        </section>
+        <PlanReadySummary refeicoes={meals} metas={targets} />
 
         <div className="mt-5 animate-entra" style={{ animationDelay: "900ms" }}>
           <p className="text-[14px] font-semibold">Esse plano faz sentido para você?</p>
