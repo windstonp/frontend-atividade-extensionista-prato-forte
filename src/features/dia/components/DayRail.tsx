@@ -64,11 +64,11 @@ function LinhaCompacta({ refeicao, indice }: { refeicao: RefeicaoDoDia; indice: 
   return (
     <li className="relative flex h-[46px] animate-entra-lado-esq items-center gap-2.5" style={cascata(indice, 70, 140)}>
       {feita ? (
-        <span className="absolute left-0 flex size-3.5 animate-pop items-center justify-center rounded-full bg-mata text-tinta">
+        <span className="absolute -left-[26px] flex size-3.5 animate-pop items-center justify-center rounded-full bg-mata text-tinta">
           <IconeCheck size={9} strokeWidth={2.4} />
         </span>
       ) : (
-        <span className="absolute left-0.5 size-2.5 rounded-full border-[1.5px] border-[#4a5d52] transition-colors duration-300" />
+        <span className="absolute -left-6 size-2.5 rounded-full border-[1.5px] border-[#4a5d52] transition-colors duration-300" />
       )}
       <span className={`w-11 text-[12.5px] ${feita ? "text-cinza-treino" : "text-musgo"}`}>{refeicao.time}</span>
       <Link

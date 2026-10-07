@@ -35,7 +35,7 @@ export function HojeTela() {
   if (!dia.data || !perfil.data) {
     return (
       <Screen>
-        <header className="px-5 pt-5 pb-3 area-segura-cima">
+        <header className="px-5 pt-seguro-5 pb-3">
           <div className="h-[68px]" />
         </header>
         <main className="flex-1 px-5">
@@ -71,7 +71,7 @@ export function HojeTela() {
 
   return (
     <Screen>
-      <header className="flex shrink-0 items-center justify-between px-5 pt-5 pb-3 area-segura-cima">
+      <header className="flex shrink-0 items-center justify-between px-5 pt-seguro-5 pb-3">
         <div>
           <p className="animate-entra text-[12.5px] text-fumo">{dataPorExtenso(date)}</p>
           <h1 className="mt-0.5 animate-entra font-display text-[26px] font-bold tracking-[-0.025em]" style={{ animationDelay: "70ms" }}>
@@ -113,7 +113,7 @@ export function HojeTela() {
             >
               <span className="w-[74px] shrink-0 text-[12.5px] text-fumo">Peso</span>
               <ReguaPeso inicio={eu.startWeightKg} atual={eu.currentWeightKg} meta={eu.goalWeightKg} />
-              <span className="w-[108px] shrink-0 text-right text-[12.5px] font-semibold tabular-nums">
+              <span className="min-w-[68px] shrink-0 text-right text-[12.5px] font-semibold whitespace-nowrap tabular-nums">
                 {m.peso(eu.currentWeightKg)} de {m.peso(eu.goalWeightKg)}
               </span>
             </Link>
