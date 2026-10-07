@@ -11,7 +11,7 @@ const meta = {
   title: 'Dia/MealRow',
   component: MealRow,
   decorators: [(Story) => <ol className="list-none pl-6"><Story /></ol>],
-  args: { refeicao: dia()[0], indice: 0, clicavel: true },
+  args: { refeicao: dia()[0], indice: 0, clicavel: true, href: '/dieta/cafe', mostrarRegistro: false },
 } satisfies Meta<typeof MealRow>;
 
 export default meta;
@@ -50,5 +50,20 @@ export const DiaSemTreino: Story = {
   args: { refeicao: { ...dia()[3], name: 'Lanche da tarde', isNext: false }, indice: 3, clicavel: false },
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByText('Lanche da tarde')).toBeInTheDocument();
+  },
+};
+
+export const ComRegistro: Story = {
+  args: { refeicao: dia(['cafe'])[0], mostrarRegistro: true },
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByText('378 de 378 kcal')).toBeInTheDocument();
+  },
+};
+
+export const Ontem: Story = {
+  args: { refeicao: dia()[4], indice: 4, href: '/dieta/jantar?data=2026-09-27', mostrarRegistro: true },
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole('link')).toHaveAttribute('href', '/dieta/jantar?data=2026-09-27');
+    await expect(within(canvasElement).getByText('0 de 419 kcal')).toBeInTheDocument();
   },
 };

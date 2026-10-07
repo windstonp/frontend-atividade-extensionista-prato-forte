@@ -24,7 +24,7 @@ describe('Dieta (S12)', () => {
     expect(screen.getByRole('tab', { name: /dom 4/ })).toBeInTheDocument();
     expect(screen.getByText('Quarta-feira, dia de treino')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Almoço/ })).toHaveAttribute('href', '/dieta/almoco');
-    expect(screen.getByText('Toda refeição de hoje pode ser trocada. O Nutri ajuda quando o dia sair do plano.')).toBeInTheDocument();
+    expect(screen.getByText('Registre o que você comeu. A sugestão de cada refeição é um atalho para bater a meta.')).toBeInTheDocument();
   });
 
   it('outro dia mostra a prévia sem links (RN23)', async () => {
@@ -50,5 +50,18 @@ describe('Dieta (S12)', () => {
     await userEvent.setup().click(await screen.findByRole('tab', { name: /seg 28/ }));
 
     expect(await screen.findByText('Nada registrado neste dia')).toBeInTheDocument();
+  });
+
+  it('ontem é tocável e abre a refeição com a data (spec 09 RF36)', async () => {
+    server.use(
+      respondendoDia(diaApi({ data: '2026-09-30' })),
+      respondendoDia(diaApi({ data: '2026-09-29', hoje: false, editavel: true, feitas: ['cafe'] }), '2026-09-29'),
+    );
+
+    renderizar(<DietaTela />);
+    await userEvent.setup().click(await screen.findByRole('tab', { name: /ter 29/ }));
+
+    expect(await screen.findByRole('link', { name: /Jantar/ })).toHaveAttribute('href', '/dieta/jantar?data=2026-09-29');
+    expect(screen.getByText('378 de 378 kcal')).toBeInTheDocument();
   });
 });

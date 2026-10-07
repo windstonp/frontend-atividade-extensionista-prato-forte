@@ -89,7 +89,7 @@ export function HojeTela() {
 
       <main className="flex-1 px-5 pt-3">
         {usabilidade.data?.invite ? <InviteBanner aoDispensar={() => dispensar.mutate()} /> : null}
-        <DayRail refeicoes={meals} ocupado={false} aoAlternar={() => {}} />
+        <DayRail refeicoes={meals} />
 
         <section className="mt-4 animate-entra" style={{ animationDelay: "420ms" }}>
           <div className="mb-2.5 flex items-baseline justify-between">

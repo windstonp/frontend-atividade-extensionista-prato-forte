@@ -23,22 +23,26 @@ const semPlano = (status: string | null) =>
   );
 
 describe('revisão final do 04B', () => {
-  it('1: marcar fica bloqueado enquanto o servidor não responde (sem corrida)', async () => {
+  it('1: "+" tocado de novo durante o envio não manda outra vez (spec 09, Review Focus 1)', async () => {
     let liberar!: () => void;
     const pausa = new Promise<void>((r) => (liberar = r));
+    let pedidos = 0;
     server.use(
-      http.patch(url('/days/2026-09-28/meals/almoco'), async () => {
+      http.post(url('/days/2026-09-28/meals/almoco/entries'), async () => {
+        pedidos++;
         await pausa;
-        return HttpResponse.json({ data: diaApi({ feitas: ['almoco'] }) });
+        return HttpResponse.json({ data: diaApi({ feitas: ['almoco'] }) }, { status: 201 });
       }),
     );
+    const u = userEvent.setup();
 
     renderizar(<DetalheTela slot="almoco" />);
-    await userEvent.setup().click(await screen.findByRole('button', { name: 'Marcar como feita' }));
-
-    expect(await screen.findByRole('button', { name: 'Desmarcar refeição' })).toBeDisabled();
+    await u.click(await screen.findByRole('button', { name: /^Registrar Arroz branco cozido/ }));
+    expect(await screen.findByRole('button', { name: 'Arroz branco cozido já registrado' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /^Registrar Feijão/ })).toBeDisabled();
     liberar();
-    await vi.waitFor(() => expect(screen.getByRole('button', { name: 'Desmarcar refeição' })).toBeEnabled());
+    await vi.waitFor(() => expect(screen.queryByRole('button', { name: /^Registrar / })).toBeNull());
+    expect(pedidos).toBe(1);
   });
 
   it('2: "Tentar de novo" na Dieta pede um plano novo', async () => {
@@ -98,19 +102,19 @@ describe('revisão final do 04B', () => {
     expect(screen.getByRole('button', { name: 'Tentar de novo' })).toBeInTheDocument();
   });
 
-  it('6: marcar vai para a data carregada; se o dia virou, avisa e recarrega hoje', async () => {
+  it('6: registrar vai para a data carregada; se o dia virou, avisa e recarrega hoje', async () => {
     let caminho = '';
     server.use(
-      http.patch(url('/days/:data/meals/:slot'), ({ request }) => {
+      http.post(url('/days/:data/meals/:slot/entries'), ({ request }) => {
         caminho = new URL(request.url).pathname;
-        return erroDaApi(409, 'DAY_NOT_EDITABLE', 'Só dá para mudar o dia de hoje.');
+        return erroDaApi(409, 'DAY_NOT_EDITABLE', 'Esse dia não pode mais ser alterado.');
       }),
     );
 
-    renderizar(<HojeTela />);
-    await userEvent.setup().click(await screen.findByRole('button', { name: 'Marcar café da manhã como feita' }));
+    renderizar(<DetalheTela slot="cafe" />);
+    await userEvent.setup().click(await screen.findByRole('button', { name: /^Registrar Ovos mexidos/ }));
 
     expect(await screen.findByText('O dia virou. Atualizamos para hoje.')).toBeInTheDocument();
-    expect(caminho).toBe('/api/v1/days/2026-09-28/meals/cafe');
+    expect(caminho).toBe('/api/v1/days/2026-09-28/meals/cafe/entries');
   });
 });

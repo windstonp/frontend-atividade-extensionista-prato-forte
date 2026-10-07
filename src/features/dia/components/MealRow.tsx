@@ -5,8 +5,10 @@ import { cascata } from "@/lib/motion";
 import type { RefeicaoDoDia } from "../tipos";
 import { Selo } from "@/components/ui/Selo";
 
-/** Uma refeição na lista da Dieta. Só hoje abre o detalhe (RN23). */
-export function MealRow({ refeicao, indice, clicavel }: { refeicao: RefeicaoDoDia; indice: number; clicavel: boolean }) {
+/** Uma refeição na lista da Dieta. Hoje e ontem abrem o detalhe (RN23, D13); com registro, mostra o registrado da meta. */
+export function MealRow({ refeicao, indice, clicavel, href, mostrarRegistro }: {
+  refeicao: RefeicaoDoDia; indice: number; clicavel: boolean; href: string; mostrarRegistro: boolean;
+}) {
   const proxima = refeicao.isNext;
 
   const corpo = (
@@ -14,7 +16,9 @@ export function MealRow({ refeicao, indice, clicavel }: { refeicao: RefeicaoDoDi
       <div className="flex items-baseline gap-2.5">
         <span className="w-11 text-[12.5px] font-semibold text-fumo">{refeicao.time}</span>
         <span className="flex-1 text-base font-semibold tracking-[-0.01em]">{refeicao.name}</span>
-        <span className={`text-[12.5px] ${proxima ? "font-semibold" : "text-fumo"}`}>{kcal(refeicao.calories)}</span>
+        <span className={`text-[12.5px] tabular-nums ${proxima ? "font-semibold" : "text-fumo"}`}>
+          {mostrarRegistro ? `${Math.round(refeicao.consumed.calories)} de ${kcal(refeicao.calories)}` : kcal(refeicao.calories)}
+        </span>
       </div>
       <p className="mt-1 pl-[54px] text-[13px] leading-snug text-fumo first-letter:uppercase">{refeicao.summary}</p>
       {proxima ? (
@@ -50,7 +54,7 @@ export function MealRow({ refeicao, indice, clicavel }: { refeicao: RefeicaoDoDi
 
       {clicavel ? (
         <Link
-          href={`/dieta/${refeicao.slot}`}
+          href={href}
           className={`block rounded-[18px] border bg-white px-4 py-3.5 transition-[border-color,box-shadow,transform] duration-250 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-0.5 hover:border-pedra hover:shadow-[0_14px_30px_-22px_rgba(21,37,28,.9)] active:scale-[0.99] ${
             proxima ? "border-tinta shadow-[inset_0_0_0_1px_var(--color-tinta)]" : "border-transparent"
           } ${refeicao.done ? "bg-white/70" : ""}`}

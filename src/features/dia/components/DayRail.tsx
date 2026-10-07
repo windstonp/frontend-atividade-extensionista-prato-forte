@@ -4,24 +4,15 @@ import Link from "next/link";
 import { IconeCheck } from "@/components/icons";
 import { kcal } from "@/lib/format";
 import { cascata, useMontado } from "@/lib/motion";
-import type { RefeicaoDoDia, Slot } from "../tipos";
+import type { RefeicaoDoDia } from "../tipos";
 
 const ALTURA_LINHA = 46;
 
 /**
  * A linha do dia: o dia inteiro como um traço vertical, com a próxima refeição aberta na posição dela.
- * Responde "o que eu preciso fazer hoje?" com comida, e não com número.
+ * Responde "o que eu preciso registrar hoje?" com comida, e não com número (spec 09: feita = com registro).
  */
-export function DayRail({
-  refeicoes,
-  aoAlternar,
-  ocupado = false,
-}: {
-  refeicoes: RefeicaoDoDia[];
-  aoAlternar: (slot: Slot, done: boolean) => void;
-  /** Uma marcação ainda está a caminho do servidor: o botão espera. */
-  ocupado?: boolean;
-}) {
+export function DayRail({ refeicoes }: { refeicoes: RefeicaoDoDia[] }) {
   const montado = useMontado(120);
   const proxima = refeicoes.find((m) => m.isNext);
   const feitas = refeicoes.filter((m) => m.done).length;
@@ -48,7 +39,7 @@ export function DayRail({
         <ol className="list-none">
           {refeicoes.map((refeicao, i) =>
             refeicao.slot === proxima?.slot ? (
-              <ProximaRefeicao key={refeicao.slot} refeicao={refeicao} indice={i} aoAlternar={aoAlternar} ocupado={ocupado} />
+              <ProximaRefeicao key={refeicao.slot} refeicao={refeicao} indice={i} />
             ) : (
               <LinhaCompacta key={refeicao.slot} refeicao={refeicao} indice={i} />
             ),
@@ -79,22 +70,12 @@ function LinhaCompacta({ refeicao, indice }: { refeicao: RefeicaoDoDia; indice: 
       >
         {refeicao.name}
       </Link>
-      <span className={`text-[12.5px] ${feita ? "text-cinza-treino" : "text-musgo"}`}>{kcal(refeicao.calories)}</span>
+      <span className={`text-[12.5px] ${feita ? "text-cinza-treino" : "text-musgo"}`}>{kcal(feita ? refeicao.consumed.calories : refeicao.calories)}</span>
     </li>
   );
 }
 
-function ProximaRefeicao({
-  refeicao,
-  indice,
-  aoAlternar,
-  ocupado,
-}: {
-  refeicao: RefeicaoDoDia;
-  indice: number;
-  aoAlternar: (slot: Slot, done: boolean) => void;
-  ocupado: boolean;
-}) {
+function ProximaRefeicao({ refeicao, indice }: { refeicao: RefeicaoDoDia; indice: number }) {
   return (
     <li className="relative my-2 animate-escala" style={cascata(indice, 70, 180)}>
       {/* o marcador da vez pulsa devagar: é o único ponto em movimento da tela */}
@@ -110,36 +91,17 @@ function ProximaRefeicao({
         </div>
         <p className="mt-1.5 text-[13.5px] leading-snug text-fumo first-letter:uppercase">{refeicao.summary}</p>
         <div className="mt-3 flex gap-4 border-t border-fio pt-2.5">
-          <span className="text-[13px] font-semibold">
-            {Math.round(refeicao.calories)} <span className="font-medium text-fumo">kcal</span>
-          </span>
-          <span className="text-[13px] font-semibold">
-            {Math.round(refeicao.macros.protein)} g <span className="font-medium text-fumo">proteína</span>
+          <span className="text-[13px] font-semibold tabular-nums">
+            {Math.round(refeicao.consumed.calories)} <span className="font-medium text-fumo">de {Math.round(refeicao.calories)} kcal</span>
           </span>
         </div>
-        <div className="mt-3 flex gap-2">
-          <Link
-            href={`/dieta/${refeicao.slot}`}
-            className="group relative flex h-11 flex-1 items-center justify-center overflow-hidden rounded-full bg-gema text-sm font-semibold text-tinta transition-[filter,box-shadow] duration-250 hover:brightness-[.97] hover:shadow-[0_8px_20px_-10px_rgba(21,37,28,.6)] active:scale-[0.97]"
-          >
-            <span className="pointer-events-none absolute inset-0 -translate-x-full bg-linear-100 from-transparent via-white/45 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full motion-reduce:hidden" />
-            <span className="relative">Ver refeição</span>
-          </Link>
-          <button
-            type="button"
-            onClick={() => aoAlternar(refeicao.slot, true)}
-            disabled={ocupado}
-            aria-pressed={false}
-            aria-label={`Marcar ${refeicao.name.toLowerCase()} como feita`}
-            className="group flex size-11 shrink-0 items-center justify-center rounded-full border-[1.5px] border-tinta transition-[background-color,color] duration-250 hover:bg-tinta hover:text-neve active:scale-90 disabled:opacity-60"
-          >
-            <IconeCheck
-              size={19}
-              strokeWidth={2}
-              className="transition-transform duration-300 ease-[cubic-bezier(.34,1.56,.64,1)] group-hover:scale-110"
-            />
-          </button>
-        </div>
+        <Link
+          href={`/dieta/${refeicao.slot}`}
+          className="group relative mt-3 flex h-11 w-full items-center justify-center overflow-hidden rounded-full bg-gema text-sm font-semibold text-tinta transition-[filter,box-shadow] duration-250 hover:brightness-[.97] hover:shadow-[0_8px_20px_-10px_rgba(21,37,28,.6)] active:scale-[0.97]"
+        >
+          <span className="pointer-events-none absolute inset-0 -translate-x-full bg-linear-100 from-transparent via-white/45 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full motion-reduce:hidden" />
+          <span className="relative">Registrar refeição</span>
+        </Link>
       </div>
     </li>
   );

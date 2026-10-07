@@ -30,30 +30,19 @@ describe('Hoje (S11)', () => {
     );
   });
 
-  it('marca a refeição na hora e envia ao servidor (RF13)', async () => {
-    let corpo: unknown;
-    server.use(
-      http.patch(url('/days/2026-09-28/meals/cafe'), async ({ request }) => {
-        corpo = await request.json();
-        return HttpResponse.json({ data: diaApi({ feitas: ['cafe'] }) });
-      }),
-    );
-
+  it('não tem botão de marcar; "Registrar refeição" leva ao detalhe da próxima (spec 09 S11)', async () => {
     renderizar(<HojeTela />);
-    await userEvent.setup().click(await screen.findByRole('button', { name: 'Marcar café da manhã como feita' }));
 
-    expect(await screen.findByText('1 de 5 refeições')).toBeInTheDocument();
-    expect(corpo).toEqual({ done: true });
+    expect(await screen.findByRole('link', { name: 'Registrar refeição' })).toHaveAttribute('href', '/dieta/cafe');
+    expect(screen.queryByRole('button', { name: /como feita$/ })).toBeNull();
   });
 
-  it('se salvar falhar, volta como estava e avisa', async () => {
-    server.use(http.patch(url('/days/2026-09-28/meals/cafe'), () => erroDaApi(500, 'SERVER_ERROR', 'x')));
-
+  it('a refeição da vez mostra registrado de meta', async () => {
+    server.use(respondendoDia(diaApi({ feitas: ['cafe'] })));
     renderizar(<HojeTela />);
-    await userEvent.setup().click(await screen.findByRole('button', { name: 'Marcar café da manhã como feita' }));
 
-    expect(await screen.findByText('Não foi possível salvar. Tente de novo.')).toBeInTheDocument();
-    expect(screen.getByText('0 de 5 refeições')).toBeInTheDocument();
+    expect(await screen.findByText('1 de 5 refeições')).toBeInTheDocument();
+    expect(screen.getByText(/de 205 kcal/)).toBeInTheDocument(); // lanche (a da vez): 0 de 205
   });
 
   it('última alteração vira toast com "Desfazer"', async () => {

@@ -94,7 +94,7 @@ function Conteudo({ dia }: { dia: ReturnType<typeof useDia> }) {
     );
   }
 
-  const { date, isToday, isTrainingDay, meals, totals } = dia.data;
+  const { date, editable, isToday, isTrainingDay, meals, totals } = dia.data;
   const semana = new Date(`${date}T12:00:00`).getDay();
   const feitasAte = isToday ? Math.max(0, meals.findIndex((m) => !m.done)) : 0;
 
@@ -122,15 +122,22 @@ function Conteudo({ dia }: { dia: ReturnType<typeof useDia> }) {
           {/* os traços ficam fora da lista: <ol> só pode ter <li> */}
           <ol className="list-none">
             {meals.map((refeicao, i) => (
-              <MealRow key={`${date}-${refeicao.slot}`} refeicao={refeicao} indice={i} clicavel={isToday} />
+              <MealRow
+                key={`${date}-${refeicao.slot}`}
+                refeicao={refeicao}
+                indice={i}
+                clicavel={editable}
+                href={isToday ? `/dieta/${refeicao.slot}` : `/dieta/${refeicao.slot}?data=${date}`}
+                mostrarRegistro={editable || dia.data.materialized} // futuro (prévia) só mostra a meta
+              />
             ))}
           </ol>
         </div>
       )}
 
-      {isToday ? (
+      {editable ? (
         <p className="mt-4 animate-entra text-[12.5px] leading-normal text-fumo" style={{ animationDelay: "620ms" }}>
-          Toda refeição de hoje pode ser trocada. O Nutri ajuda quando o dia sair do plano.
+          Registre o que você comeu. A sugestão de cada refeição é um atalho para bater a meta.
         </p>
       ) : null}
     </>

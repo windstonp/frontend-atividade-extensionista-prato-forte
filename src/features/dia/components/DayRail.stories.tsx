@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { expect, fn, userEvent, within } from 'storybook/test';
+import { expect, within } from 'storybook/test';
 import { camelizar } from '@/lib/api/case';
 import { diaApi } from '@/mocks/fixtures/dia';
 import type { Dia } from '../tipos';
@@ -10,21 +10,20 @@ const refeicoes = (feitas: string[] = []) => camelizar<Dia>(diaApi({ feitas })).
 const meta = {
   title: 'Dia/DayRail',
   component: DayRail,
-  args: { refeicoes: refeicoes(), aoAlternar: fn() },
+  args: { refeicoes: refeicoes() },
 } satisfies Meta<typeof DayRail>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const ManhaNadaFeito: Story = {
-  play: async ({ canvasElement, args }) => {
+  play: async ({ canvasElement }) => {
     const tela = within(canvasElement);
     await expect(tela.getByText('0 de 5 refeições')).toBeInTheDocument();
     await expect(tela.getByRole('heading', { name: 'Café da manhã' })).toBeInTheDocument();
-    const marcar = tela.getByRole('button', { name: 'Marcar café da manhã como feita' });
-    await expect(marcar).toHaveAttribute('aria-pressed', 'false');
-    await userEvent.click(marcar);
-    await expect(args.aoAlternar).toHaveBeenCalledWith('cafe', true);
+    await expect(tela.getByText('de 378 kcal')).toBeInTheDocument();
+    await expect(tela.getByRole('link', { name: 'Registrar refeição' })).toHaveAttribute('href', '/dieta/cafe');
+    await expect(tela.queryByRole('button')).toBeNull(); // spec 09: não há mais "marcar como feita"
   },
 };
 
@@ -34,7 +33,7 @@ export const MeioDoDia: Story = {
     const tela = within(canvasElement);
     await expect(tela.getByText('2 de 5 refeições')).toBeInTheDocument();
     await expect(tela.getByRole('heading', { name: 'Almoço' })).toBeInTheDocument();
-    await expect(tela.getByRole('link', { name: 'Ver refeição' })).toHaveAttribute('href', '/dieta/almoco');
+    await expect(tela.getByRole('link', { name: 'Registrar refeição' })).toHaveAttribute('href', '/dieta/almoco');
     await expect(tela.getByRole('link', { name: 'Café da manhã' })).toHaveAttribute('href', '/dieta/cafe');
   },
 };
