@@ -134,7 +134,7 @@ describe('Configurações (S19)', () => {
     server.use(http.get(url('/settings'), () => HttpResponse.json({ data: configuracoesApi({ vapid: null }) })));
     renderizar(<ConfiguracoesTela />);
     expect(await screen.findByText('Os avisos ainda não estão disponíveis neste servidor.')).toBeInTheDocument();
-    expect(screen.getByRole('switch', { name: 'Dicas do Nutri' })).toBeDisabled();
+    expect(screen.getByRole('switch', { name: 'Dicas do Nutri' })).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('medidas: escolher "Libra e polegada" salva imperial', async () => {

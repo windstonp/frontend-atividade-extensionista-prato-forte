@@ -43,6 +43,16 @@ describe('push', () => {
     expect(suportePush()).toBe('ok');
   });
 
+  it('iPad com iPadOS (se apresenta como Mac com tela de toque) conta como iPhone', () => {
+    navegador({ push: false });
+    Object.defineProperty(window.navigator, 'userAgent', { configurable: true, value: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Version/17.0 Safari/605.1.15' });
+    Object.defineProperty(window.navigator, 'maxTouchPoints', { configurable: true, value: 5 });
+    expect(suportePush()).toBe('ios-sem-pwa');
+
+    Object.defineProperty(window.navigator, 'maxTouchPoints', { configurable: true, value: 0 });
+    expect(suportePush()).toBe('sem-suporte'); // Mac de verdade
+  });
+
   it('com permissão, inscreve com a chave do servidor e devolve o JSON da inscrição (CA01)', async () => {
     const { subscribe } = navegador();
 

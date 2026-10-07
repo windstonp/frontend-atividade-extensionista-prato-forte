@@ -31,7 +31,7 @@ export const SemSuporte: Story = {
   play: async ({ canvasElement }) => {
     const tela = within(canvasElement);
     await expect(tela.getByText('Este navegador não recebe avisos. Tente no Chrome do celular.')).toBeInTheDocument();
-    for (const chave of tela.getAllByRole('switch')) await expect(chave).toBeDisabled();
+    for (const chave of tela.getAllByRole('switch')) await expect(chave).toHaveAttribute('aria-disabled', 'true');
   },
 };
 
@@ -45,6 +45,6 @@ export const IosSemPwa: Story = {
 export const Salvando: Story = {
   args: { salvando: true },
   play: async ({ canvasElement }) => {
-    for (const chave of within(canvasElement).getAllByRole('switch')) await expect(chave).toBeDisabled();
+    for (const chave of within(canvasElement).getAllByRole('switch')) await expect(chave).toHaveAttribute('aria-disabled', 'true');
   },
 };

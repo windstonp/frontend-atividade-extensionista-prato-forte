@@ -24,9 +24,11 @@ export function Toggle({
       aria-checked={ligado}
       aria-label={rotulo}
       aria-describedby={descricao ? idDescricao : undefined}
-      disabled={desabilitado}
-      onClick={() => onChange(!ligado)}
-      className="flex min-h-[62px] w-full items-center gap-3.5 py-3 text-left active:scale-100 disabled:cursor-not-allowed disabled:opacity-60"
+      aria-disabled={desabilitado || undefined}
+      onClick={() => {
+        if (!desabilitado) onChange(!ligado);
+      }}
+      className="flex min-h-[62px] w-full items-center gap-3.5 py-3 text-left active:scale-100 aria-disabled:cursor-not-allowed aria-disabled:opacity-60"
     >
       <span className="flex-1">
         <span className="block text-[15px] font-semibold">{rotulo}</span>

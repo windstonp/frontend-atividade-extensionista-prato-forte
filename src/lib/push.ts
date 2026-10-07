@@ -14,7 +14,10 @@ export interface InscricaoJson {
 const temPush = () =>
   typeof window !== 'undefined' && 'serviceWorker' in navigator && Boolean(navigator.serviceWorker) && typeof window.PushManager !== 'undefined' && typeof window.Notification !== 'undefined';
 
-const ehIphone = () => typeof navigator !== 'undefined' && /iPhone|iPad|iPod/.test(navigator.userAgent);
+// iPadOS 13+ se apresenta como Mac; a tela de toque denuncia.
+const ehIphone = () =>
+  typeof navigator !== 'undefined' &&
+  (/iPhone|iPad|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1));
 const instalado = () =>
   (navigator as Navigator & { standalone?: boolean }).standalone === true || window.matchMedia?.('(display-mode: standalone)').matches === true;
 

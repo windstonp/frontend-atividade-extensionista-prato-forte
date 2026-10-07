@@ -32,8 +32,12 @@ export const Desabilitado: Story = {
   args: { desabilitado: true },
   play: async ({ canvasElement, args }) => {
     const chave = within(canvasElement).getByRole('switch');
-    await expect(chave).toBeDisabled();
+    // aria-disabled (não disabled): o foco não cai para o <body> quando trava no meio de um salvamento.
+    await expect(chave).toHaveAttribute('aria-disabled', 'true');
+    await expect(chave).not.toBeDisabled();
+    chave.focus();
     await userEvent.click(chave);
     await expect(args.onChange).not.toHaveBeenCalled();
+    await expect(chave).toHaveFocus();
   },
 };
