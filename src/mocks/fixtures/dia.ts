@@ -39,51 +39,95 @@ const REFEICOES = [
 
 const umaCasa = (n: number) => Math.round(n * 10) / 10;
 
-export function refeicaoApi(slot: string, i: number, feita: boolean, proxima: boolean) {
-  const base = REFEICOES.find((r) => r.slot === slot)!;
-  const itens = ITENS[slot].map((it, j) => ({
+export type RegistroApi = {
+  id: number; food_id: number | null; custom_food_id: number | null; suggestion_item_id: number | null;
+  name: string; amount: number; measure: 'g' | 'ml'; amount_text: string; calories: number;
+  macros: { protein: number; carbs: number; fat: number }; conflicts: string[];
+};
+
+type ItemApi = ReturnType<typeof itensDe>[number];
+
+function itensDe(slot: string, i: number) {
+  return ITENS[slot].map((it, j) => ({
     id: 5000 + i * 10 + j,
     food_id: it.food_id,
     name: it.name,
     grams: it.grams,
+    measure: 'g' as 'g' | 'ml',
     amount: it.amount,
     calories: it.calories,
     macros: { protein: it.protein, carbs: it.carbs, fat: it.fat },
     source: 'plan',
     replaced_from: null as string | null,
+    registered: false,
   }));
-  const soma = (k: 'protein' | 'carbs' | 'fat') => umaCasa(itens.reduce((s, it) => s + it.macros[k], 0));
+}
+
+/** Registro igual a um item sugerido (o "+"). */
+export function registroDaSugestao(item: ItemApi, id = 7000 + item.id): RegistroApi {
+  return { id, food_id: item.food_id, custom_food_id: null, suggestion_item_id: item.id, name: item.name, amount: item.grams,
+    measure: item.measure, amount_text: item.amount, calories: item.calories, macros: item.macros, conflicts: [] };
+}
+
+type T = { calories: number; protein: number; carbs: number; fat: number };
+const somarT = (partes: T[]): T => ({
+  calories: partes.reduce((s, p) => s + p.calories, 0),
+  protein: umaCasa(partes.reduce((s, p) => s + p.protein, 0)),
+  carbs: umaCasa(partes.reduce((s, p) => s + p.carbs, 0)),
+  fat: umaCasa(partes.reduce((s, p) => s + p.fat, 0)),
+});
+
+/** Espelho do RN48 só para os fixtures (os mocks não importam código de produção). */
+function situacao(meta: T, c: T) {
+  const calories = c.calories * 10 < meta.calories * 9 ? 'below' : c.calories * 10 > meta.calories * 11 ? 'above' : 'ok';
+  const protein = umaCasa(c.protein * 10) >= umaCasa(meta.protein * 9) ? 'ok' : 'below';
+  const fat = umaCasa(c.fat * 10) <= umaCasa(meta.fat * 11) ? 'ok' : 'above';
+  return { status: { calories, protein, fat }, goal_met: calories !== 'below' && protein === 'ok' };
+}
+
+/** Uma refeição como a API devolve; `feita` sem `registros` = registrou a sugestão inteira. */
+export function refeicaoApi(slot: string, i: number, feita: boolean, proxima: boolean, registros?: RegistroApi[]) {
+  const base = REFEICOES.find((r) => r.slot === slot)!;
+  const itens = itensDe(slot, i);
+  const entries = registros ?? (feita ? itens.map((it) => registroDaSugestao(it)) : []);
+  const ligados = new Set(entries.map((e) => e.suggestion_item_id));
+  const meta = somarT(itens.map((it) => ({ calories: it.calories, ...it.macros })));
+  const consumed = somarT(entries.map((e) => ({ calories: e.calories, ...e.macros })));
+  const sit = entries.length > 0 ? situacao(meta, consumed) : null;
   return {
     id: 900 + i,
     ...base,
     position: i + 1,
-    done: feita,
+    done: entries.length > 0,
     is_next: proxima,
     summary: itens.map((it, j) => (j === 0 ? it.name : it.name.toLowerCase())).join(', ').replace(/, ([^,]*)$/, ' e $1'),
-    calories: itens.reduce((s, it) => s + it.calories, 0),
-    macros: { protein: soma('protein'), carbs: soma('carbs'), fat: soma('fat') },
-    items: itens,
+    calories: meta.calories,
+    macros: { protein: meta.protein, carbs: meta.carbs, fat: meta.fat },
+    consumed,
+    status: sit?.status ?? null,
+    goal_met: sit?.goal_met ?? false,
+    items: itens.map((it) => ({ ...it, registered: ligados.has(it.id) })),
+    entries,
   };
 }
 
-/** `GET /days/today` com as refeições feitas que o teste quiser. */
-export function diaApi(parcial: { feitas?: string[]; data?: string; hoje?: boolean; ultimaAlteracao?: { id: number; text: string } } = {}) {
+/** `GET /days/{data}` com o que o teste quiser registrado. */
+export function diaApi(parcial: {
+  feitas?: string[]; registros?: Partial<Record<string, RegistroApi[]>>; data?: string; hoje?: boolean; editavel?: boolean;
+  ultimaAlteracao?: { id: number; text: string };
+} = {}) {
   const feitas = parcial.feitas ?? [];
+  const registros = parcial.registros ?? {};
   const hoje = parcial.hoje ?? true;
-  const proxima = hoje ? REFEICOES.find((r) => !feitas.includes(r.slot))?.slot : undefined;
-  const meals = REFEICOES.map((r, i) => refeicaoApi(r.slot, i, feitas.includes(r.slot), r.slot === proxima));
-  const somar = (lista: typeof meals) => ({
-    calories: lista.reduce((s, m) => s + m.calories, 0),
-    protein: umaCasa(lista.reduce((s, m) => s + m.macros.protein, 0)),
-    carbs: umaCasa(lista.reduce((s, m) => s + m.macros.carbs, 0)),
-    fat: umaCasa(lista.reduce((s, m) => s + m.macros.fat, 0)),
-  });
-  const planned = somar(meals);
-  const consumed = somar(meals.filter((m) => m.done));
+  const comRegistro = (slot: string) => feitas.includes(slot) || (registros[slot]?.length ?? 0) > 0;
+  const proxima = hoje ? REFEICOES.find((r) => !comRegistro(r.slot))?.slot : undefined;
+  const meals = REFEICOES.map((r, i) => refeicaoApi(r.slot, i, feitas.includes(r.slot), r.slot === proxima, registros[r.slot]));
+  const planned = somarT(meals.map((m) => ({ calories: m.calories, ...m.macros })));
+  const consumed = somarT(meals.map((m) => m.consumed));
   return {
     date: parcial.data ?? '2026-09-28',
     is_today: hoje,
-    editable: hoje,
+    editable: parcial.editavel ?? hoje,
     materialized: hoje,
     is_training_day: true,
     targets: { kcal: 2250, protein_g: 115, carbs_g: 305, fat_g: 65 },

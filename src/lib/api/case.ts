@@ -1,5 +1,7 @@
 const paraCamel = (chave: string) => chave.replace(/_([a-z0-9])/g, (_, letra: string) => letra.toUpperCase());
-const paraSnake = (chave: string) => chave.replace(/[A-Z]/g, (letra) => `_${letra.toLowerCase()}`);
+/** `per100` → `per_100`: número colado na letra também ganha o sublinhado (spec 09). */
+const paraSnake = (chave: string) =>
+  chave.replace(/[A-Z]/g, (letra) => `_${letra.toLowerCase()}`).replace(/([a-z])(\d+)$/, '$1_$2');
 
 function converter(valor: unknown, chave: (texto: string) => string): unknown {
   if (Array.isArray(valor)) return valor.map((item) => converter(item, chave));

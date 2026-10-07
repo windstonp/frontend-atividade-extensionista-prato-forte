@@ -3,6 +3,9 @@ import type { Macros } from '@/lib/types';
 
 export type Slot = 'cafe' | 'lanche' | 'almoco' | 'pre-treino' | 'jantar';
 
+/** Sólido em gramas, líquido em mililitros (RN47). */
+export type Medida = 'g' | 'ml';
+
 export interface ItemDoDia {
   id: number | null;
   foodId: number;
@@ -13,6 +16,32 @@ export interface ItemDoDia {
   macros: Macros;
   source: 'plan' | 'manual' | 'nutri';
   replacedFrom: string | null;
+  measure: Medida;
+  /** Já existe registro ligado a este item sugerido (o "+" vira ✓). */
+  registered: boolean;
+}
+
+/** O que foi comido, com retrato dos números do momento (RN49). */
+export interface Registro {
+  id: number;
+  foodId: number | null;
+  customFoodId: number | null;
+  suggestionItemId: number | null;
+  name: string;
+  amount: number;
+  measure: Medida;
+  amountText: string;
+  calories: number;
+  macros: Macros;
+  /** Restrições do usuário que este alimento toca (RN51): avisa, não bloqueia. */
+  conflicts: string[];
+}
+
+/** RN48 — situação da refeição. */
+export interface StatusDaMeta {
+  calories: 'below' | 'ok' | 'above';
+  protein: 'below' | 'ok';
+  fat: 'ok' | 'above';
 }
 
 export interface RefeicaoDoDia {
@@ -23,12 +52,19 @@ export interface RefeicaoDoDia {
   time: string;
   note: string | null;
   position: number;
+  /** Tem pelo menos um registro (RN46). */
   done: boolean;
   isNext: boolean;
   summary: string;
+  /** Meta da refeição = soma da sugestão (RN48). */
   calories: number;
   macros: Macros;
+  /** Sugestão da refeição (D13): o que recomendamos, não o que foi comido. */
   items: ItemDoDia[];
+  consumed: Totais;
+  status: StatusDaMeta | null;
+  goalMet: boolean;
+  entries: Registro[];
 }
 
 export interface Totais {
@@ -49,6 +85,32 @@ export interface Dia {
   totals: { planned: Totais; consumed: Totais; remaining: Totais };
   meals: RefeicaoDoDia[];
   lastChange: { id: number; text: string; undoUntil: string } | null;
+}
+
+/** Resultado da busca de alimentos (RN50). */
+export interface AlimentoBusca {
+  id: number;
+  kind: 'catalog' | 'custom';
+  name: string;
+  measure: Medida;
+  group: string | null;
+  per100: Totais;
+  portion: { amount: number; text: string } | null;
+  household: { label: string; labelPlural: string | null; amount: number } | null;
+  conflicts: string[];
+  lastAmount?: number;
+}
+
+/** Uma entrada de `POST …/entries`: o "+" da sugestão, um alimento do catálogo ou um próprio. */
+export type NovaEntrada =
+  | { suggestionItemId: number; amount?: number }
+  | { foodId: number; amount: number }
+  | { customFoodId: number; amount: number };
+
+export interface AlimentoProprioDados {
+  name: string;
+  measure: Medida;
+  per100: Totais;
 }
 
 export interface OpcaoDeTroca {

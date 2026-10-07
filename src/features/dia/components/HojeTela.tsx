@@ -14,7 +14,7 @@ import { iniciais } from "@/features/perfil/formato";
 import { usePerfil } from "@/features/perfil/hooks";
 import { dataPorExtenso, saudacao } from "@/lib/format";
 import { useMedidas } from "@/lib/useMedidas";
-import { useDia, useMarcandoRefeicao, useMarcarRefeicao, useTentarPlanoDeNovo } from "../hooks";
+import { useDia, useTentarPlanoDeNovo } from "../hooks";
 import { estadoSemPlano, planoSemAtivo } from "../regras";
 import { AvisoDeAlteracao } from "./AvisoDeAlteracao";
 import { DayRail } from "./DayRail";
@@ -27,8 +27,6 @@ export function HojeTela() {
   const m = useMedidas();
   const usabilidade = useStatusUsabilidade();
   const dispensar = useDispensarConvite();
-  const marcar = useMarcarRefeicao();
-  const marcando = useMarcandoRefeicao();
   const plano = useTentarPlanoDeNovo("/hoje");
   const semPlano = planoSemAtivo(dia.error);
 
@@ -91,7 +89,7 @@ export function HojeTela() {
 
       <main className="flex-1 px-5 pt-3">
         {usabilidade.data?.invite ? <InviteBanner aoDispensar={() => dispensar.mutate()} /> : null}
-        <DayRail refeicoes={meals} ocupado={marcando} aoAlternar={(slot, done) => marcar.mutate({ slot, done })} />
+        <DayRail refeicoes={meals} ocupado={false} aoAlternar={() => {}} />
 
         <section className="mt-4 animate-entra" style={{ animationDelay: "420ms" }}>
           <div className="mb-2.5 flex items-baseline justify-between">

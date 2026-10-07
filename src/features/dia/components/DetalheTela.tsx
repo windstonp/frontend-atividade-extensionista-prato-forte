@@ -7,13 +7,12 @@ import { NutriBar } from "@/components/app/NutriBar";
 import { Screen } from "@/components/app/Screen";
 import { TopBar } from "@/components/app/TopBar";
 import { IconeCheck } from "@/components/icons";
-import { Button } from "@/components/ui/Button";
 import { CountUp } from "@/components/ui/CountUp";
 import { RailSimples } from "@/components/ui/Rail";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { comoApiError } from "@/lib/api/errors";
 import { gramas, porcentagem } from "@/lib/format";
-import { useDia, useMarcandoRefeicao, useMarcarRefeicao, useSubstituicoes, useTentarPlanoDeNovo, useTrocarItem } from "../hooks";
+import { useDia, useSubstituicoes, useTentarPlanoDeNovo, useTrocarItem } from "../hooks";
 import { estadoSemPlano, planoSemAtivo } from "../regras";
 import type { ItemDoDia } from "../tipos";
 import { AvisoDeAlteracao } from "./AvisoDeAlteracao";
@@ -25,11 +24,9 @@ import { Selo } from "@/components/ui/Selo";
 /** S13 — uma refeição de hoje: o que vai no prato, trocas (RF14), desfazer (RF15) e marcar (RF13). */
 export function DetalheTela({ slot }: { slot: string }) {
   const dia = useDia();
-  const marcar = useMarcarRefeicao();
   const trocar = useTrocarItem();
   const [alvo, setAlvo] = useState<ItemDoDia | null>(null);
   const opcoes = useSubstituicoes(alvo?.id ?? null);
-  const marcando = useMarcandoRefeicao();
   const plano = useTentarPlanoDeNovo("/dieta");
   const semPlano = planoSemAtivo(dia.error);
 
@@ -179,9 +176,6 @@ export function DetalheTela({ slot }: { slot: string }) {
             texto={`Não tenho ${proteico.name.toLowerCase()} em casa`}
           />
         ) : null}
-        <Button variante={refeicao.done ? "contorno" : "primaria"} disabled={marcando} onClick={() => marcar.mutate({ slot: refeicao.slot, done: !refeicao.done })}>
-          {refeicao.done ? "Desmarcar refeição" : "Marcar como feita"}
-        </Button>
       </footer>
 
       <SubstitutionSheet

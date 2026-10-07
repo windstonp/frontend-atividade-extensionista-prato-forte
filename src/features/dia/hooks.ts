@@ -1,20 +1,18 @@
 'use client';
 
-import { useIsMutating, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/Toaster';
 import * as diaApi from '@/lib/api/dia';
 import { comoApiError } from '@/lib/api/errors';
 import * as planos from '@/lib/api/planos';
 import { CHAVES } from '@/lib/chaves';
-import { recalcularDia } from './regras';
-import type { Dia, Slot } from './tipos';
+import type { Dia } from './tipos';
 
 export const ERRO_AO_MARCAR = 'Não foi possível salvar. Tente de novo.';
 export const DIA_VIROU = 'O dia virou. Atualizamos para hoje.';
 
 const HOJE = CHAVES.dia('today');
-const MARCAR = ['marcar-refeicao'];
 
 /** Hoje volta a ser buscado ao voltar para a aba: um app aberto de ontem não mostra o dia velho. */
 export const useDia = (data = 'today') =>
@@ -30,33 +28,6 @@ function diaVirou(erro: unknown, cliente: QueryClient, avisar: ReturnType<typeof
   void cliente.invalidateQueries({ queryKey: CHAVES.dias });
   return true;
 }
-
-/**
- * RF13 — otimista: muda na hora, desfaz se a API falhar, fica com a resposta do servidor.
- * Uma marcação por vez (`useMarcandoRefeicao` trava os botões): respostas fora de ordem não sobrescrevem a última.
- */
-export function useMarcarRefeicao() {
-  const cliente = useQueryClient();
-  const avisar = useToast();
-
-  return useMutation({
-    mutationKey: MARCAR,
-    mutationFn: ({ slot, done }: { slot: Slot; done: boolean }) => diaApi.marcarRefeicao(dataNaTela(cliente), slot, done),
-    onMutate: async ({ slot, done }) => {
-      await cliente.cancelQueries({ queryKey: HOJE });
-      const anterior = cliente.getQueryData<Dia>(HOJE);
-      if (anterior) cliente.setQueryData<Dia>(HOJE, recalcularDia(anterior, slot, done));
-      return { anterior };
-    },
-    onError: (erro, _vars, contexto) => {
-      if (contexto?.anterior) cliente.setQueryData(HOJE, contexto.anterior);
-      if (!diaVirou(erro, cliente, avisar)) avisar({ texto: ERRO_AO_MARCAR });
-    },
-    onSuccess: (dia) => cliente.setQueryData(HOJE, dia),
-  });
-}
-
-export const useMarcandoRefeicao = () => useIsMutating({ mutationKey: MARCAR }) > 0;
 
 export function useSubstituicoes(itemId: number | null) {
   const cliente = useQueryClient();

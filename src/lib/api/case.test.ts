@@ -25,3 +25,11 @@ describe('conversão de chaves', () => {
     });
   });
 });
+
+describe('números colados às letras (per_100 da spec 09)', () => {
+  it('ida e volta', () => {
+    expect(snakear({ per100: { calories: 1 } })).toEqual({ per_100: { calories: 1 } });
+    expect(camelizar({ per_100: 1 })).toEqual({ per100: 1 });
+    expect(snakear({ p256dh: 'x' })).toEqual({ p256dh: 'x' }); // chave da inscrição de push: dígito no meio fica
+  });
+});
