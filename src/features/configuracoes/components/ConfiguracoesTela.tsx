@@ -5,7 +5,6 @@ import { useState } from "react";
 import { ErrorState } from "@/components/app/ErrorState";
 import { Screen } from "@/components/app/Screen";
 import { TopBar } from "@/components/app/TopBar";
-import { Segmento } from "@/components/ui/Field";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toaster";
 import { ContaSection } from "@/features/auth/components/ContaSection";
@@ -15,7 +14,8 @@ import { comoApiError } from "@/lib/api/errors";
 import { inscrever, inscricaoAtual, jsonDaInscricao, suportePush } from "@/lib/push";
 import { Button } from "@/components/ui/Button";
 import { useConfiguracoes, useSalvarConfiguracoes } from "../hooks";
-import type { Avisos, SistemaDeMedidas } from "../tipos";
+import type { Avisos } from "../tipos";
+import { UnitSelector } from "./UnitSelector";
 import { AvisosNoCelular, type EstadoDosAvisos } from "./AvisosNoCelular";
 
 /** S19 — avisos no celular, medidas e conta (RF26, RF30). */
@@ -103,17 +103,7 @@ export function ConfiguracoesTela() {
                 </Button>
               </div>
             ) : null}
-            <div className="mt-[22px]">
-              <Segmento
-                label="Medidas"
-                valor={dados.unitSystem}
-                onChange={(v: SistemaDeMedidas) => salvar.mutate({ unitSystem: v })}
-                opcoes={[
-                  { valor: "metric", rotulo: "Quilo e centímetro" },
-                  { valor: "imperial", rotulo: "Libra e polegada" },
-                ]}
-              />
-            </div>
+            <UnitSelector valor={dados.unitSystem} salvando={salvar.isPending} aoMudar={(v) => salvar.mutate({ unitSystem: v })} />
           </>
         )}
 
