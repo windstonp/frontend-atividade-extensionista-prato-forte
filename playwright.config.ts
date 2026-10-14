@@ -23,5 +23,7 @@ export default defineConfig({
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 240_000,
+    // O build de produção exige a URL da API (next.config.ts); a do E2E é a do backend local.
+    env: { NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000' },
   },
 });

@@ -18,6 +18,45 @@ docker compose run --rm web npm run e2e
 
 O `docker compose up` do backend sobe a fila (`queue`), que gera os planos. `AI_FAKE_FAIL_PLAN_FOR` faz a primeira geração das contas `falha-*` falhar (E2E-07). Os testes mudam o estado das contas: semeie de novo antes de cada rodada.
 
+## Configuração (`.env`)
+
+As variáveis estão documentadas em [`.env.example`](.env.example). Para desenvolver:
+
+```bash
+cp .env.example .env.local
+```
+
+| Variável | Para quê |
+| --- | --- |
+| `NEXT_PUBLIC_API_URL` | URL da API Laravel, sem barra no fim. **Obrigatória no `npm run build`**: o build falha sem ela. |
+| `SESSION_COOKIE_NAME` | Cookie de sessão do Laravel (`Str::slug(APP_NAME).'-session'`). O proxy usa para abrir as telas logadas. |
+| `NEXT_PUBLIC_APP_VERSION` | Opcional. Versão em Configurações; sem ela, a do `package.json`. |
+| `MAILPIT_URL` | Só E2E. |
+
+`NEXT_PUBLIC_*` entram no bundle na hora do build: mudou, refaça o build.
+
+## Subir (deploy)
+
+1. **Domínio.** Front e API no mesmo domínio, em subdomínios — ex.: `app.exemplo.com.br` e
+   `api.exemplo.com.br`. O login é por cookie (Sanctum SPA) e o proxy do Next precisa ler o
+   cookie de sessão; com domínios diferentes (ex.: `*.vercel.app` + outro host) o login não
+   para de voltar para `/entrar`.
+2. **Front** (Vercel ou `npm run build && npm run start` em um Node 22):
+   ```env
+   NEXT_PUBLIC_API_URL=https://api.exemplo.com.br
+   SESSION_COOKIE_NAME=prato-forte-session
+   ```
+3. **Backend** (`backend/.env`), apontando de volta para o front:
+   ```env
+   APP_URL=https://api.exemplo.com.br
+   FRONTEND_URL=https://app.exemplo.com.br
+   SANCTUM_STATEFUL_DOMAINS=app.exemplo.com.br
+   SESSION_DOMAIN=.exemplo.com.br
+   SESSION_SECURE_COOKIE=true
+   ```
+   `FRONTEND_URL` libera o CORS e monta o link do e-mail de redefinir senha; `SESSION_DOMAIN`
+   com o ponto faz o cookie valer para os dois subdomínios.
+
 
 Guia nutricional para quem treina na academia Zfit, em Capivari de Baixo.
 Projeto de extensão do curso de Ciência da Computação da UNINTER.
